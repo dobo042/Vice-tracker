@@ -30,8 +30,9 @@ jobs:
 
       - name: Generate Gradle wrapper
         run: |
-          sudo apt-get install -y gradle
-          cd android && gradle wrapper --gradle-version 8.6
+          wget -q https://services.gradle.org/distributions/gradle-8.6-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/
+          cd android && /tmp/gradle-8.6/bin/gradle wrapper --gradle-version 8.6
           chmod +x gradlew
 
       - name: Generate debug keystore
@@ -52,9 +53,7 @@ jobs:
             dest="android/app/src/main/res/${dir}"
             mkdir -p "$dest"
             convert -size "${size}x${size}" xc:#6200EE "${dest}/ic_launcher.png"
-            convert -size "${size}x${size}" xc:#6200EE -fill none \
-              -draw "circle $((size/2)),$((size/2)) $((size/2)),2" \
-              "${dest}/ic_launcher_round.png"
+            convert -size "${size}x${size}" xc:#6200EE "${dest}/ic_launcher_round.png"
           done
 
       - name: Create assets directory
