@@ -30,9 +30,9 @@ jobs:
 
       - name: Generate Gradle wrapper
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.6-bin.zip -O /tmp/gradle.zip
+          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp/
-          cd android && /tmp/gradle-8.6/bin/gradle wrapper --gradle-version 8.6
+          cd android && /tmp/gradle-8.7/bin/gradle wrapper --gradle-version 8.7
           chmod +x gradlew
 
       - name: Generate debug keystore
