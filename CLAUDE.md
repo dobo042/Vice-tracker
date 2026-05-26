@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Vice Tracker** is a React Native mobile application (Android-first) for tracking personal habits or vices. The project was initialized in May 2026 and is in the early development phase — configuration and dependencies are in place, but application source code has not been written yet.
+**Vice Tracker** is a React Native 0.74 mobile application (Android-first) for tracking personal habits or vices. Users add vices with a per-vice cooldown timer; logging a vice turns its card red and schedules a push notification for when the cooldown elapses, at which point the card turns green.
 
 ## Tech Stack
 
@@ -17,47 +17,61 @@
 | Notifications | @notifee/react-native 9.1.8 |
 | Animations | react-native-reanimated 4.3.1 |
 | Gestures | react-native-gesture-handler 2.31.2 |
-| Icons | react-native-vector-icons 10.3.0 |
+| Icons | react-native-vector-icons 10.3.0 (MaterialCommunityIcons) |
 | Testing | Jest 29.6.3 + react-test-renderer |
 | Linting | ESLint 8.19.0 (@react-native/eslint-config) |
 | Formatting | Prettier 2.8.8 |
 | Bundler | Metro (@react-native/metro-config 0.74.89) |
 
-Node.js >= 18 is required.
+Node.js >= 18, JDK 17 required.
 
 ## Repository Structure
 
 ```
 Vice-tracker/
-├── CLAUDE.md           # This file
-├── README.md           # User-facing docs (currently empty)
-├── package.json        # Dependencies and scripts
-│
-# To be created as the project grows:
-├── index.js            # React Native entry point
-├── App.tsx             # Root component
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── screens/        # Screen-level components
-│   ├── navigation/     # Navigation configuration
-│   ├── store/          # Zustand state stores
-│   ├── hooks/          # Custom React hooks
-│   ├── utils/          # Helpers and utilities
-│   └── types/          # Shared TypeScript types
-├── android/            # Android native project
-├── tsconfig.json       # TypeScript config (to be created)
-├── babel.config.js     # Babel config (to be created)
-├── metro.config.js     # Metro bundler config (to be created)
-└── .eslintrc.js        # ESLint config (to be created)
+├── .github/workflows/build-android.yml   # CI: builds debug APK on push
+├── CLAUDE.md
+├── README.md
+├── package.json
+├── index.js              # RN entry point (gesture-handler import must be first)
+├── App.tsx               # Root: GestureHandlerRootView > SafeAreaProvider > PaperProvider > NavigationContainer
+├── app.json              # App name: ViceTracker
+├── babel.config.js       # @react-native/babel-preset + reanimated plugin
+├── metro.config.js
+├── tsconfig.json
+├── android/              # Native Android project (package: com.vicetracker)
+│   └── app/src/main/
+│       ├── AndroidManifest.xml   # POST_NOTIFICATIONS, VIBRATE, RECEIVE_BOOT_COMPLETED
+│       └── java/com/vicetracker/
+└── src/
+    ├── types/index.ts        # Vice, HistoryEntry
+    ├── store/
+    │   ├── viceStore.ts      # vices[], addVice, logVice, deleteVice (persisted)
+    │   └── historyStore.ts   # entries[], addEntry, deleteEntry, clearHistory (persisted)
+    ├── navigation/
+    │   ├── types.ts          # RootStackParamList: Vices | History
+    │   └── AppNavigator.tsx  # Stack navigator, purple header
+    ├── screens/
+    │   ├── VicesScreen.tsx   # Vice list + FAB + delete dialog; schedules notifications
+    │   └── HistoryScreen.tsx # Logged-before-delete entries
+    ├── components/
+    │   ├── ViceCard.tsx          # Red/green status, Log button, Delete button
+    │   ├── AddViceModal.tsx      # Name + description + cooldown (hours)
+    │   └── DeleteConfirmDialog.tsx  # Cancel / Delete Only / Log & Delete
+    └── utils/
+        └── notifications.ts  # notifee wrapper: setup, requestPermissions, schedule, cancel
 ```
 
 ## Development Commands
 
 ```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
 # Start Metro bundler (keep running in a separate terminal)
 npm start
 
-# Run on Android (requires Android emulator or device)
+# Run on Android device/emulator
 npm run android
 
 # Linting
@@ -66,81 +80,116 @@ npm run lint
 # Tests
 npm test
 
-# Bundle for Android release
+# Bundle JS for Android release
 npm run bundle:android
 
-# Build release APK
+# Build release APK (requires signing config)
 npm run build:apk
 
 # Build debug APK
 npm run build:debug-apk
 ```
 
+## Building an APK
+
+### Via GitHub Actions (recommended — no local toolchain needed)
+
+Every push to `main` or `claude/**` triggers `.github/workflows/build-android.yml`, which:
+
+1. Sets up JDK 17 and Android SDK on an Ubuntu runner
+2. Runs `npm ci`
+3. Runs `./gradlew assembleDebug`
+4. Uploads `app-debug.apk` as a workflow artifact (retained 14 days)
+
+**To download the APK:**
+1. Go to the repository on GitHub → **Actions** tab
+2. Click the latest **Build Android APK** run
+3. Download the `vice-tracker-debug-<sha>` artifact
+
+### Local build (Android Studio / command line)
+
+**Prerequisites:**
+- Android Studio with SDK Platform 34 and Build Tools 34 installed
+- `ANDROID_HOME` env var pointing to your SDK (e.g. `~/Library/Android/sdk`)
+- JDK 17 (`JAVA_HOME` set accordingly)
+
+```bash
+# 1. Install JS deps
+npm install --legacy-peer-deps
+
+# 2. Start Metro in one terminal
+npm start
+
+# 3. Build and install debug APK (in another terminal)
+npm run android
+
+# — or build APK without installing —
+cd android && ./gradlew assembleDebug
+# Output: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**First-run checklist:**
+- Accept Android SDK licenses: `$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses`
+- Ensure an emulator is running or a device connected with USB debugging enabled
+
 ## Git Workflow
 
 - **Main branch:** `main`
-- Feature and AI-assistant work happens on dedicated branches (e.g. `claude/*`)
-- Commit messages use the imperative mood, e.g. `add vice tracking screen`
+- Feature / AI-assistant work on `claude/*` branches
+- Commit messages use the imperative mood: `add vice tracking screen`
 - Keep commits focused — one logical change per commit
+- CI builds a debug APK on every push; download from GitHub Actions artifacts
 
 ## Architecture Conventions
 
+### Vice lifecycle
+1. **Add** — name, optional description, cooldown in hours (stored as `cooldownMinutes`)
+2. **Log** — sets `lastLoggedAt`, card turns red, notifee schedules a `TIMESTAMP` trigger notification
+3. **Cooldown elapses** — notification fires ("You can X again!"), card turns green
+4. **Delete** — cancels pending notification via `notifee.cancelNotification('vice-<id>')`; optionally saves to history first
+
 ### State Management (Zustand)
-- Each domain (vices, settings, notifications) gets its own store file under `src/store/`
+- One store per domain: `viceStore`, `historyStore`
 - Stores export a single `use<Domain>Store` hook
-- Keep store state normalized; derive computed values with selectors inside the hook
+- Both stores are persisted via `zustand/middleware` `persist` + `createJSONStorage(() => AsyncStorage)`
+- Notification side-effects (schedule/cancel) happen in the screen, not the store
 
 ### Navigation
-- Define all route names as a typed `RootStackParamList` in `src/navigation/types.ts`
-- Use a single `NavigationContainer` at the root (`App.tsx`)
-- Screen components live in `src/screens/`, one file per screen
+- Typed `RootStackParamList` in `src/navigation/types.ts`
+- Single `NavigationContainer` in `App.tsx`
+- History screen is reachable via a clock icon in the Vices screen header
 
 ### Components
-- Prefer `react-native-paper` components over custom primitives for consistent Material Design 3 theming
-- Component files use PascalCase: `ViceCard.tsx`
-- Keep components small; extract sub-components when a file exceeds ~150 lines
-- Use `react-native-safe-area-context` (`SafeAreaView`) for all full-screen layouts
+- Prefer `react-native-paper` over custom primitives (Material Design 3)
+- PascalCase filenames: `ViceCard.tsx`
+- Extract sub-components when a file exceeds ~150 lines
+- No inline styles except truly dynamic values; use `StyleSheet.create()` for layout
 
 ### TypeScript
-- `strict` mode enabled (configure in `tsconfig.json` when created)
+- `strict` mode via `@react-native/typescript-config`
 - No `any` — use `unknown` and narrow explicitly
-- Shared types go in `src/types/`; screen-specific prop types live in their own file
+- Shared types in `src/types/`
+
+### Notifications (`src/utils/notifications.ts`)
+- `setupNotifications()` — creates Android channel, called on app launch
+- `requestNotificationPermissions()` — called after setup; handles denied state gracefully
+- `scheduleViceReadyNotification(vice)` — cancels previous then creates a `TIMESTAMP` trigger
+- `cancelViceNotification(viceId)` — call before deleting a vice
 
 ### Storage
-- All persistence goes through `@react-native-async-storage/async-storage`
-- Wrap storage calls in a thin utility layer (`src/utils/storage.ts`) so the rest of the app never imports AsyncStorage directly
-
-### Notifications
-- Notification logic lives in `src/utils/notifications.ts` or a dedicated service
-- Request permissions on first launch; handle the denied state gracefully
-
-### Styling
-- Use `react-native-paper`'s `useTheme()` hook for colors/typography — avoid hardcoded hex values
-- Layout and spacing via React Native `StyleSheet.create()`
-- No inline styles except for truly dynamic values
+- All AsyncStorage access is wrapped in stores via Zustand `persist`
+- Never import AsyncStorage directly outside of store files
 
 ### Testing
-- Unit tests live alongside the file they test: `ViceCard.test.tsx` next to `ViceCard.tsx`
-- Use Jest + react-test-renderer for component snapshots
-- Aim to test behavior, not implementation details
-
-## Environment & Configuration Files to Create
-
-Before writing application code, create these standard React Native configuration files:
-
-1. **`index.js`** — entry point that registers `App` with `AppRegistry`
-2. **`App.tsx`** — root component with `NavigationContainer` and theme provider
-3. **`tsconfig.json`** — extend `@react-native/typescript-config/tsconfig.json`
-4. **`babel.config.js`** — use `@react-native/babel-preset` preset
-5. **`metro.config.js`** — use `@react-native/metro-config` defaults
-6. **`.eslintrc.js`** — extend `@react-native` eslint config
-7. **`.prettierrc`** — `{ "singleQuote": true, "trailingComma": "all", "printWidth": 100 }`
-8. **`.gitignore`** — standard React Native gitignore
+- Test files live next to the file they test: `ViceCard.test.tsx` beside `ViceCard.tsx`
+- Use Jest + react-test-renderer for snapshot / behaviour tests
 
 ## Key Dependency Notes
 
-- **react-navigation v7** requires `react-native-screens` and `react-native-safe-area-context` to be installed and linked (already listed as dependencies)
-- **react-native-gesture-handler** must be imported at the very top of `index.js` (before any other import)
+- **react-native-gesture-handler** must be the very first import in `index.js`
 - **react-native-reanimated** requires its Babel plugin in `babel.config.js`
-- **react-native-vector-icons** requires linking fonts in the Android `build.gradle`
-- **@notifee/react-native** requires Android permission declarations in `AndroidManifest.xml`
+- **react-native-vector-icons** fonts are linked via `fonts.gradle` in `android/app/build.gradle`
+  (MaterialIcons.ttf and MaterialCommunityIcons.ttf)
+- **@notifee/react-native** requires `POST_NOTIFICATIONS`, `VIBRATE`, and `RECEIVE_BOOT_COMPLETED`
+  permissions in `AndroidManifest.xml` (already added)
+- **react-navigation v7** requires `react-native-screens` and `react-native-safe-area-context`
