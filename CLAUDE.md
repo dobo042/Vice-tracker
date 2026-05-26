@@ -15,8 +15,8 @@
 | State Management | Zustand 5.0.13 |
 | Local Storage | @react-native-async-storage/async-storage |
 | Notifications | @notifee/react-native 9.1.8 |
-| Animations | react-native-reanimated 4.3.1 |
-| Gestures | react-native-gesture-handler 2.31.2 |
+| Animations | react-native-reanimated 3.10.1 |
+| Gestures | react-native-gesture-handler 2.16.2 |
 | Icons | react-native-vector-icons 10.3.0 (MaterialCommunityIcons) |
 | Testing | Jest 29.6.3 + react-test-renderer |
 | Linting | ESLint 8.19.0 (@react-native/eslint-config) |
@@ -24,6 +24,9 @@
 | Bundler | Metro (@react-native/metro-config 0.74.89) |
 
 Node.js >= 18, JDK 17 required.
+
+> **Android build toolchain (confirmed working):**
+> AGP 8.6.0 · Gradle 8.7 · compileSdk/targetSdk 35 · minSdk 24 · NDK 26.1.10909125
 
 ## Repository Structure
 
@@ -109,7 +112,7 @@ Every push to `main` or `claude/**` triggers `.github/workflows/build-android.ym
 ### Local build (Android Studio / command line)
 
 **Prerequisites:**
-- Android Studio with SDK Platform 34 and Build Tools 34 installed
+- Android Studio with SDK Platform 35 and Build Tools 35 installed
 - `ANDROID_HOME` env var pointing to your SDK (e.g. `~/Library/Android/sdk`)
 - JDK 17 (`JAVA_HOME` set accordingly)
 
@@ -193,3 +196,24 @@ cd android && ./gradlew assembleDebug
 - **@notifee/react-native** requires `POST_NOTIFICATIONS`, `VIBRATE`, and `RECEIVE_BOOT_COMPLETED`
   permissions in `AndroidManifest.xml` (already added)
 - **react-navigation v7** requires `react-native-screens` and `react-native-safe-area-context`
+
+## Android Native Dependency Compatibility (RN 0.74)
+
+These versions are **pinned** — do not upgrade without testing. Each ceiling was found by a
+failed CI build against RN 0.74's build toolchain.
+
+| Package | Pinned version | Why it can't go higher |
+|---|---|---|
+| `react-native-gesture-handler` | **2.16.2** | 2.17+ requires `ViewManagerWithGeneratedInterface` which only exists in RN 0.75+ |
+| `react-native-reanimated` | **3.10.1** | 3.6.x calls UIManager methods removed in RN 0.74; 3.16+ requires RN 0.78+ |
+| `react-native-screens` | **3.31.1** | 4.x uses a codegen prop type (`undefined`) unsupported by RN 0.74's codegen |
+| `@react-native-async-storage/async-storage` | **2.2.0** | 3.x requires KSP 2.1.0 → Kotlin 2.1.0, which is binary-incompatible with the RN 0.74 Gradle plugin |
+
+### Android build config constraints
+
+| Setting | Value | Reason |
+|---|---|---|
+| `kotlinVersion` | `1.9.22` | Must match the version the RN 0.74 Gradle plugin was compiled against; 2.x breaks it |
+| `enableJetifier` | `false` | RN 0.74 is full AndroidX; Jetifier caused OOM on the Hermes AAR |
+| `reactNativeArchitectures` | `arm64-v8a` (CI only) | Building all 4 ABIs quadruples memory usage; unnecessary for sideloaded debug APKs |
+| `newArchEnabled` | `false` | New architecture not yet enabled; enabling it changes codegen requirements for all native modules |
