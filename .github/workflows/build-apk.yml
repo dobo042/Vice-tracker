@@ -56,8 +56,15 @@ jobs:
             convert -size "${size}x${size}" xc:#6200EE "${dest}/ic_launcher_round.png"
           done
 
-      - name: Create assets directory
-        run: mkdir -p android/app/src/main/assets
+      - name: Bundle JavaScript
+        run: |
+          mkdir -p android/app/src/main/assets
+          npx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
 
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug --no-daemon
