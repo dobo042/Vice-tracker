@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
-import {Button, Dialog, Portal, TextInput} from 'react-native-paper';
+import {Button, Dialog, HelperText, Portal, TextInput} from 'react-native-paper';
 import {useViceStore} from '../store/viceStore';
 
 interface Props {
@@ -12,16 +12,21 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const {addVice} = useViceStore();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [cooldownHours, setCooldownHours] = useState('24');
+
+  const cooldownValid =
+    cooldownHours !== '' && !isNaN(Number(cooldownHours)) && Number(cooldownHours) > 0;
 
   const reset = () => {
     setName('');
     setDescription('');
+    setCooldownHours('24');
   };
 
   const handleSave = () => {
     const trimmedName = name.trim();
-    if (!trimmedName) return;
-    addVice(trimmedName, description.trim() || undefined);
+    if (!trimmedName || !cooldownValid) return;
+    addVice(trimmedName, Math.round(Number(cooldownHours) * 60), description.trim() || undefined);
     reset();
     onDismiss();
   };
@@ -49,12 +54,25 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             onChangeText={setDescription}
             mode="outlined"
             multiline
-            numberOfLines={3}
+            numberOfLines={2}
           />
+          <TextInput
+            label="Cooldown (hours) *"
+            value={cooldownHours}
+            onChangeText={setCooldownHours}
+            mode="outlined"
+            keyboardType="decimal-pad"
+          />
+          {!cooldownValid && cooldownHours !== '' ? (
+            <HelperText type="error">Enter a positive number of hours</HelperText>
+          ) : null}
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={handleDismiss}>Cancel</Button>
-          <Button mode="contained" onPress={handleSave} disabled={!name.trim()}>
+          <Button
+            mode="contained"
+            onPress={handleSave}
+            disabled={!name.trim() || !cooldownValid}>
             Save
           </Button>
         </Dialog.Actions>

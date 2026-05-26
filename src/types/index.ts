@@ -2,6 +2,8 @@ export interface Vice {
   id: string;
   name: string;
   description?: string;
+  cooldownMinutes: number;
+  lastLoggedAt?: string;
   createdAt: string;
 }
 

@@ -8,6 +8,10 @@ import AddViceModal from '../components/AddViceModal';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import {useViceStore} from '../store/viceStore';
 import {useHistoryStore} from '../store/historyStore';
+import {
+  cancelViceNotification,
+  scheduleViceReadyNotification,
+} from '../utils/notifications';
 import type {Vice} from '../types';
 import type {RootStackParamList} from '../navigation/types';
 
@@ -16,7 +20,7 @@ type VicesNavProp = StackNavigationProp<RootStackParamList, 'Vices'>;
 export default function VicesScreen() {
   const theme = useTheme();
   const navigation = useNavigation<VicesNavProp>();
-  const {vices, deleteVice} = useViceStore();
+  const {vices, logVice, deleteVice} = useViceStore();
   const {addEntry} = useHistoryStore();
   const [addVisible, setAddVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Vice | null>(null);
@@ -33,19 +37,27 @@ export default function VicesScreen() {
     });
   }, [navigation]);
 
-  const handleDeleteOnly = () => {
-    if (deleteTarget) {
-      deleteVice(deleteTarget.id);
-      setDeleteTarget(null);
-    }
+  const handleLogVice = async (vice: Vice) => {
+    logVice(vice.id);
+    await scheduleViceReadyNotification({
+      ...vice,
+      lastLoggedAt: new Date().toISOString(),
+    });
   };
 
-  const handleDeleteAndLog = () => {
-    if (deleteTarget) {
-      addEntry(deleteTarget);
-      deleteVice(deleteTarget.id);
-      setDeleteTarget(null);
-    }
+  const handleDeleteOnly = async () => {
+    if (!deleteTarget) return;
+    await cancelViceNotification(deleteTarget.id);
+    deleteVice(deleteTarget.id);
+    setDeleteTarget(null);
+  };
+
+  const handleDeleteAndLog = async () => {
+    if (!deleteTarget) return;
+    await cancelViceNotification(deleteTarget.id);
+    addEntry(deleteTarget);
+    deleteVice(deleteTarget.id);
+    setDeleteTarget(null);
   };
 
   return (
@@ -66,7 +78,11 @@ export default function VicesScreen() {
           data={vices}
           keyExtractor={item => item.id}
           renderItem={({item}) => (
-            <ViceCard vice={item} onDeletePress={() => setDeleteTarget(item)} />
+            <ViceCard
+              vice={item}
+              onLogPress={() => handleLogVice(item)}
+              onDeletePress={() => setDeleteTarget(item)}
+            />
           )}
           contentContainerStyle={styles.list}
         />
