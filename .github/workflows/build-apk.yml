@@ -28,8 +28,37 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
+      - name: Generate Gradle wrapper
+        run: |
+          sudo apt-get install -y gradle
+          cd android && gradle wrapper --gradle-version 8.6
+          chmod +x gradlew
+
+      - name: Generate debug keystore
+        run: |
+          keytool -genkey -v \
+            -keystore android/app/debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Generate launcher icons
+        run: |
+          sudo apt-get install -y imagemagick
+          for size_dir in "48:mipmap-mdpi" "72:mipmap-hdpi" "96:mipmap-xhdpi" "144:mipmap-xxhdpi" "192:mipmap-xxxhdpi"; do
+            size="${size_dir%%:*}"
+            dir="${size_dir##*:}"
+            dest="android/app/src/main/res/${dir}"
+            mkdir -p "$dest"
+            convert -size "${size}x${size}" xc:#6200EE "${dest}/ic_launcher.png"
+            convert -size "${size}x${size}" xc:#6200EE -fill none \
+              -draw "circle $((size/2)),$((size/2)) $((size/2)),2" \
+              "${dest}/ic_launcher_round.png"
+          done
+
+      - name: Create assets directory
+        run: mkdir -p android/app/src/main/assets
 
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug --no-daemon
