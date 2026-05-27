@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Adaptive icon foreground — geometric beer mug badge.
-  White ring (r=46) over olive tan circle (r=42) over dark-olive background.
-  Mug: solid dark rectangle body + thick D-arc handle on the right.
-  All coordinates in 108dp viewport; safe zone 18–90.
--->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -21,17 +15,30 @@
         android:fillColor="#7A6E2D"
         android:pathData="M 54,54 m -42,0 a 42,42 0 1,0 84,0 a 42,42 0 1,0 -84,0"/>
 
-    <!-- Mug body (solid rectangle) -->
+    <!-- Mug body: hourglass silhouette (concave sides, wider at top/bottom) -->
     <path
         android:fillColor="#3A2605"
-        android:pathData="M 28,28 L 60,28 L 60,76 L 28,76 Z"/>
+        android:pathData="
+            M 24,30
+            L 58,30
+            L 58,36
+            Q 46,52 58,68
+            L 58,74
+            L 24,74
+            Q 33,52 24,30
+            Z"/>
 
-    <!-- Mug handle: smooth D-arc, stroke only (creates finger-hole opening) -->
+    <!-- Inner circle cutout — tan fill creates the cylindrical window -->
+    <path
+        android:fillColor="#7A6E2D"
+        android:pathData="M 40,52 m -11,0 a 11,11 0 1,0 22,0 a 11,11 0 1,0 -22,0"/>
+
+    <!-- Handle: smooth D-arc, attaches flush at (58,36) and (58,68) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#3A2605"
-        android:strokeWidth="8"
+        android:strokeWidth="9"
         android:strokeLineCap="round"
-        android:pathData="M 60,36 C 90,36 90,68 60,68"/>
+        android:pathData="M 58,36 C 88,36 88,68 58,68"/>
 
 </vector>
