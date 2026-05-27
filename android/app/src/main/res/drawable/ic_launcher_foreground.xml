@@ -10,35 +10,29 @@
         android:fillColor="#FFFFFF"
         android:pathData="M 54,54 m -46,0 a 46,46 0 1,0 92,0 a 46,46 0 1,0 -92,0"/>
 
-    <!-- Warm olive tan circle fill -->
+    <!-- Gold circle fill -->
     <path
-        android:fillColor="#7A6E2D"
+        android:fillColor="#C9A020"
         android:pathData="M 54,54 m -42,0 a 42,42 0 1,0 84,0 a 42,42 0 1,0 -84,0"/>
 
-    <!-- Mug body: hourglass silhouette (concave sides, wider at top/bottom) -->
+    <!-- Mug body: full rectangle (top+left+bottom walls + interior) -->
     <path
-        android:fillColor="#3A2605"
-        android:pathData="
-            M 24,30
-            L 58,30
-            L 58,36
-            Q 46,52 58,68
-            L 58,74
-            L 24,74
-            Q 33,52 24,30
-            Z"/>
+        android:fillColor="#8B1010"
+        android:pathData="M 19,20 L 66,20 L 66,88 L 19,88 Z"/>
 
-    <!-- Inner circle cutout — tan fill creates the cylindrical window -->
+    <!-- Handle ring: thick D-arc attaching at (66,28) and (66,80) -->
     <path
-        android:fillColor="#7A6E2D"
-        android:pathData="M 40,52 m -11,0 a 11,11 0 1,0 22,0 a 11,11 0 1,0 -22,0"/>
+        android:fillColor="#8B1010"
+        android:pathData="M 66,28 C 100,28 100,80 66,80 L 66,72 C 84,72 84,36 66,36 Z"/>
 
-    <!-- Handle: smooth D-arc, attaches flush at (58,36) and (58,68) -->
+    <!-- Upper gold window inside mug body -->
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#3A2605"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M 58,36 C 88,36 88,68 58,68"/>
+        android:fillColor="#C9A020"
+        android:pathData="M 29,30 L 64,30 L 64,53 L 29,46 Z"/>
+
+    <!-- Lower gold circle inside mug body -->
+    <path
+        android:fillColor="#C9A020"
+        android:pathData="M 41,69 m -11,0 a 11,11 0 1,0 22,0 a 11,11 0 1,0 -22,0"/>
 
 </vector>
