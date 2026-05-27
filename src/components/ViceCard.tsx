@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {AppState, StyleSheet, View} from 'react-native';
 import {Button, Card, Text, useTheme} from 'react-native-paper';
 import type {Vice} from '../types';
 
@@ -42,30 +42,49 @@ interface Props {
   vice: Vice;
   onLogPress: () => void;
   onDeletePress: () => void;
+  screenFocused: boolean;
 }
 
-export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
+export default function ViceCard({vice, onLogPress, onDeletePress, screenFocused}: Props) {
   const theme = useTheme();
   const [status, setStatus] = useState<ViceStatus>(() => getStatus(vice));
   const [remaining, setRemaining] = useState(() => formatRemaining(vice));
   const [progress, setProgress] = useState(() => getProgress(vice));
 
   useEffect(() => {
-    setStatus(getStatus(vice));
-    setRemaining(formatRemaining(vice));
-    setProgress(getProgress(vice));
-    if (!vice.lastLoggedAt) return;
-
-    const interval = setInterval(() => {
+    const recalculate = () => {
       const next = getStatus(vice);
       setStatus(next);
       setRemaining(formatRemaining(vice));
       setProgress(getProgress(vice));
-      if (next === 'ready') clearInterval(interval);
-    }, 30_000);
+    };
 
-    return () => clearInterval(interval);
-  }, [vice.lastLoggedAt, vice.cooldownMinutes]);
+    recalculate();
+
+    if (!vice.lastLoggedAt) return;
+
+    // Recalculate immediately when the user returns from background
+    const appStateSub = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') recalculate();
+    });
+
+    // Only tick while this screen is actually visible
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (screenFocused) {
+      interval = setInterval(() => {
+        const next = getStatus(vice);
+        setStatus(next);
+        setRemaining(formatRemaining(vice));
+        setProgress(getProgress(vice));
+        if (next === 'ready') clearInterval(interval);
+      }, 60_000);
+    }
+
+    return () => {
+      appStateSub.remove();
+      if (interval !== undefined) clearInterval(interval);
+    };
+  }, [vice.lastLoggedAt, vice.cooldownMinutes, screenFocused]);
 
   const cardBg =
     status === 'on-cooldown'

@@ -1,7 +1,7 @@
-import React, {useLayoutEffect, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useState} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {FAB, IconButton, Text, useTheme} from 'react-native-paper';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {StackNavigationProp} from '@react-navigation/stack';
 import ViceCard from '../components/ViceCard';
 import AddViceModal from '../components/AddViceModal';
@@ -24,6 +24,14 @@ export default function VicesScreen() {
   const {addEntry} = useHistoryStore();
   const [addVisible, setAddVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Vice | null>(null);
+  const [screenFocused, setScreenFocused] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      setScreenFocused(true);
+      return () => setScreenFocused(false);
+    }, []),
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -82,6 +90,7 @@ export default function VicesScreen() {
               vice={item}
               onLogPress={() => handleLogVice(item)}
               onDeletePress={() => setDeleteTarget(item)}
+              screenFocused={screenFocused}
             />
           )}
           contentContainerStyle={styles.list}
