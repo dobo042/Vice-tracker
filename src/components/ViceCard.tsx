@@ -90,20 +90,20 @@ export default function ViceCard({vice, onLogPress, onDeletePress, screenFocused
     status === 'on-cooldown'
       ? (theme.dark ? '#3B1010' : '#FDECEA')
       : status === 'ready'
-      ? (theme.dark ? '#0D2B0D' : '#E8F5E9')
+      ? (theme.dark ? '#1D1D00' : '#E8F5E9')
       : undefined;
 
   const statusColor =
     status === 'on-cooldown'
       ? (theme.dark ? '#FF7070' : theme.colors.error)
       : status === 'ready'
-      ? (theme.dark ? '#66BB6A' : '#2E7D32')
+      ? (theme.dark ? '#B5C040' : '#2E7D32')
       : theme.colors.onSurfaceVariant;
 
   const progressColor =
     status === 'on-cooldown'
       ? (theme.dark ? '#C62828' : '#EF9A9A')
-      : (theme.dark ? '#2E7D32' : '#66BB6A');
+      : (theme.dark ? '#6B7C00' : '#66BB6A');
 
   const statusLabel =
     status === 'on-cooldown' ? remaining : status === 'ready' ? 'Ready!' : 'Not yet logged';
