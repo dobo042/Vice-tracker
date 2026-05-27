@@ -100,14 +100,19 @@ npm run build:debug-apk
 Every push to `main` or `claude/**` triggers `.github/workflows/build-android.yml`, which:
 
 1. Sets up JDK 17 and Android SDK on an Ubuntu runner
-2. Runs `npm ci`
-3. Runs `./gradlew assembleDebug`
+2. Runs `npm ci --legacy-peer-deps`
+3. Runs `./gradlew assembleDebug` (JS is bundled into the APK by Gradle — no Metro needed)
 4. Uploads `app-debug.apk` as a workflow artifact (retained 14 days)
 
 **To download the APK:**
 1. Go to the repository on GitHub → **Actions** tab
 2. Click the latest **Build Android APK** run
-3. Download the `vice-tracker-debug-<sha>` artifact
+3. Download the `vice-tracker-debug-<sha>` artifact (downloads as a zip — the APK is inside)
+
+**To install on your Android device:**
+1. Enable **Install unknown apps** for your browser/file manager in Android Settings
+2. Transfer the APK to your phone (Google Drive, USB, etc.)
+3. Tap the APK file to install
 
 ### Local build (Android Studio / command line)
 
