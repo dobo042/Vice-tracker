@@ -13,7 +13,6 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const {addVice} = useViceStore();
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('');
-  const [description, setDescription] = useState('');
   const [cooldownMinutes, setCooldownMinutes] = useState('60');
 
   const cooldownValid =
@@ -24,7 +23,6 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const reset = () => {
     setName('');
     setEmoji('');
-    setDescription('');
     setCooldownMinutes('60');
   };
 
@@ -34,7 +32,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
     addVice(
       trimmedName,
       Math.round(Number(cooldownMinutes)),
-      description.trim() || undefined,
+      undefined,
       emoji || undefined,
     );
     reset();
@@ -59,17 +57,9 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             autoFocus
           />
           <Text variant="labelMedium" style={styles.emojiLabel}>
-            Icon (optional — tap to select)
+            Icon — swipe to browse
           </Text>
           <EmojiPicker value={emoji} onChange={setEmoji} />
-          <TextInput
-            label="Description (optional)"
-            value={description}
-            onChangeText={setDescription}
-            mode="outlined"
-            multiline
-            numberOfLines={2}
-          />
           <TextInput
             label="Cooldown (minutes) *"
             value={cooldownMinutes}

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, Text} from 'react-native';
 import {useTheme} from 'react-native-paper';
 
 export const VICE_EMOJIS = [
@@ -30,7 +30,10 @@ export default function EmojiPicker({value, onChange}: Props) {
   const theme = useTheme();
 
   return (
-    <View style={styles.grid}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}>
       {VICE_EMOJIS.map(emoji => {
         const selected = value === emoji;
         return (
@@ -45,19 +48,19 @@ export default function EmojiPicker({value, onChange}: Props) {
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
+    gap: 6,
+    paddingVertical: 4,
   },
   cell: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
