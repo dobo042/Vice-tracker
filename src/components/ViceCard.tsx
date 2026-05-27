@@ -11,6 +11,12 @@ function getStatus(vice: Vice): ViceStatus {
   return elapsed >= vice.cooldownMinutes * 60 * 1000 ? 'ready' : 'on-cooldown';
 }
 
+function getProgress(vice: Vice): number {
+  if (!vice.lastLoggedAt) return 1;
+  const elapsed = Date.now() - new Date(vice.lastLoggedAt).getTime();
+  return Math.min(1, elapsed / (vice.cooldownMinutes * 60 * 1000));
+}
+
 function formatRemaining(vice: Vice): string {
   if (!vice.lastLoggedAt) return '';
   const remaining = Math.max(
@@ -42,16 +48,19 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
   const theme = useTheme();
   const [status, setStatus] = useState<ViceStatus>(() => getStatus(vice));
   const [remaining, setRemaining] = useState(() => formatRemaining(vice));
+  const [progress, setProgress] = useState(() => getProgress(vice));
 
   useEffect(() => {
     setStatus(getStatus(vice));
     setRemaining(formatRemaining(vice));
+    setProgress(getProgress(vice));
     if (!vice.lastLoggedAt) return;
 
     const interval = setInterval(() => {
       const next = getStatus(vice);
       setStatus(next);
       setRemaining(formatRemaining(vice));
+      setProgress(getProgress(vice));
       if (next === 'ready') clearInterval(interval);
     }, 30_000);
 
@@ -72,17 +81,19 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
       ? (theme.dark ? '#66BB6A' : '#2E7D32')
       : theme.colors.onSurfaceVariant;
 
-  const statusLabel =
+  const progressColor =
     status === 'on-cooldown'
-      ? `⏳ ${remaining}`
-      : status === 'ready'
-      ? '✅ Ready!'
-      : '⚪ Not yet logged';
+      ? (theme.dark ? '#C62828' : '#EF9A9A')
+      : (theme.dark ? '#2E7D32' : '#66BB6A');
+
+  const statusLabel =
+    status === 'on-cooldown' ? remaining : status === 'ready' ? 'Ready!' : 'Not yet logged';
 
   return (
     <Card style={[styles.card, cardBg ? {backgroundColor: cardBg} : undefined]}>
       <Card.Content>
         <View style={styles.header}>
+          {vice.emoji ? <Text style={styles.emoji}>{vice.emoji}</Text> : null}
           <Text variant="titleLarge" style={styles.name}>
             {vice.name}
           </Text>
@@ -98,12 +109,12 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
           </Text>
         ) : null}
         <Text variant="labelSmall" style={{color: theme.colors.outline, marginTop: 6}}>
-          ⏱️ Cooldown: {formatCooldown(vice.cooldownMinutes)}
+          Cooldown: {formatCooldown(vice.cooldownMinutes)}
         </Text>
       </Card.Content>
       <Card.Actions style={styles.actions}>
         <Button mode="contained" icon="check" onPress={onLogPress} style={styles.btn}>
-          ✅ Log it!
+          Log
         </Button>
         <Button
           mode="contained"
@@ -112,17 +123,31 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
           icon="delete"
           onPress={onDeletePress}
           style={styles.btn}>
-          🗑️ Delete
+          Delete
         </Button>
       </Card.Actions>
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.progressFill,
+            {width: `${progress * 100}%`, backgroundColor: progressColor},
+          ]}
+        />
+      </View>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {marginBottom: 12},
-  header: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
+  card: {marginBottom: 12, overflow: 'hidden'},
+  header: {flexDirection: 'row', alignItems: 'center'},
+  emoji: {fontSize: 22, marginRight: 8},
   name: {flex: 1, marginRight: 8},
   actions: {paddingHorizontal: 16, paddingBottom: 12, gap: 8},
   btn: {flex: 1},
+  progressTrack: {
+    height: 6,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+  },
+  progressFill: {height: 6},
 });

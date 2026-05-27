@@ -1,6 +1,7 @@
 export interface Vice {
   id: string;
   name: string;
+  emoji?: string;
   description?: string;
   cooldownMinutes: number;
   lastLoggedAt?: string;
@@ -10,6 +11,7 @@ export interface Vice {
 export interface HistoryEntry {
   id: string;
   viceName: string;
+  viceEmoji?: string;
   viceDescription?: string;
   loggedAt: string;
 }

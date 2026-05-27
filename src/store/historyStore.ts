@@ -20,6 +20,7 @@ export const useHistoryStore = create<HistoryStore>()(
             {
               id: Date.now().toString(),
               viceName: vice.name,
+              viceEmoji: vice.emoji,
               viceDescription: vice.description,
               loggedAt: new Date().toISOString(),
             },

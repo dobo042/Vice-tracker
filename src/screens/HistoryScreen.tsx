@@ -23,14 +23,19 @@ function HistoryCard({entry, onRemove}: HistoryCardProps) {
     <Card style={styles.card}>
       <Card.Content style={styles.cardContent}>
         <View style={styles.cardText}>
-          <Text variant="titleMedium">{entry.viceName}</Text>
+          <View style={styles.titleRow}>
+            {entry.viceEmoji ? (
+              <Text style={styles.emoji}>{entry.viceEmoji}</Text>
+            ) : null}
+            <Text variant="titleMedium">{entry.viceName}</Text>
+          </View>
           {entry.viceDescription ? (
             <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>
               {entry.viceDescription}
             </Text>
           ) : null}
           <Text variant="labelSmall" style={{color: theme.colors.outline, marginTop: 4}}>
-            🕐 Logged {formatted}
+            Logged {formatted}
           </Text>
         </View>
         <IconButton icon="close" onPress={onRemove} />
@@ -48,7 +53,7 @@ export default function HistoryScreen() {
       {entries.length === 0 ? (
         <View style={styles.empty}>
           <Text variant="headlineSmall" style={{color: theme.colors.onSurfaceVariant}}>
-            📜 No history yet
+            No history yet
           </Text>
           <Text
             variant="bodyMedium"
@@ -77,4 +82,6 @@ const styles = StyleSheet.create({
   card: {marginBottom: 12},
   cardContent: {flexDirection: 'row', alignItems: 'center'},
   cardText: {flex: 1},
+  titleRow: {flexDirection: 'row', alignItems: 'center', gap: 6},
+  emoji: {fontSize: 18},
 });

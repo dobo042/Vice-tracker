@@ -14,8 +14,8 @@ export default function AppNavigator() {
         headerTintColor: '#fff',
         headerTitleStyle: {fontWeight: 'bold'},
       }}>
-      <Stack.Screen name="Vices" component={VicesScreen} options={{title: '🎪 My Vices'}} />
-      <Stack.Screen name="History" component={HistoryScreen} options={{title: '📜 History'}} />
+      <Stack.Screen name="Vices" component={VicesScreen} options={{title: 'My Vices'}} />
+      <Stack.Screen name="History" component={HistoryScreen} options={{title: 'History'}} />
     </Stack.Navigator>
   );
 }

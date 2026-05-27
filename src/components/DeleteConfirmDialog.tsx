@@ -20,7 +20,7 @@ export default function DeleteConfirmDialog({
   return (
     <Portal>
       <Dialog visible={vice !== null} onDismiss={onDismiss}>
-        <Dialog.Title>🗑️ Delete &quot;{vice?.name}&quot;?</Dialog.Title>
+        <Dialog.Title>Delete &quot;{vice?.name}&quot;?</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium">
             Save this entry to history before deleting, or remove it permanently?
@@ -32,7 +32,7 @@ export default function DeleteConfirmDialog({
             Delete Only
           </Button>
           <Button mode="contained" onPress={onDeleteAndLog}>
-            📜 Log &amp; Delete
+            Log &amp; Delete
           </Button>
         </Dialog.Actions>
       </Dialog>

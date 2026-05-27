@@ -5,7 +5,7 @@ import type {Vice} from '../types';
 
 interface ViceStore {
   vices: Vice[];
-  addVice: (name: string, cooldownMinutes: number, description?: string) => void;
+  addVice: (name: string, cooldownMinutes: number, description?: string, emoji?: string) => void;
   logVice: (id: string) => void;
   deleteVice: (id: string) => void;
 }
@@ -14,13 +14,14 @@ export const useViceStore = create<ViceStore>()(
   persist(
     set => ({
       vices: [],
-      addVice: (name, cooldownMinutes, description) =>
+      addVice: (name, cooldownMinutes, description, emoji) =>
         set(state => ({
           vices: [
             ...state.vices,
             {
               id: Date.now().toString(),
               name,
+              emoji,
               description,
               cooldownMinutes,
               createdAt: new Date().toISOString(),

@@ -11,6 +11,7 @@ interface Props {
 export default function AddViceModal({visible, onDismiss}: Props) {
   const {addVice} = useViceStore();
   const [name, setName] = useState('');
+  const [emoji, setEmoji] = useState('');
   const [description, setDescription] = useState('');
   const [cooldownMinutes, setCooldownMinutes] = useState('60');
 
@@ -19,6 +20,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
 
   const reset = () => {
     setName('');
+    setEmoji('');
     setDescription('');
     setCooldownMinutes('60');
   };
@@ -26,7 +28,12 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const handleSave = () => {
     const trimmedName = name.trim();
     if (!trimmedName || !cooldownValid) return;
-    addVice(trimmedName, Math.round(Number(cooldownMinutes)), description.trim() || undefined);
+    addVice(
+      trimmedName,
+      Math.round(Number(cooldownMinutes)),
+      description.trim() || undefined,
+      emoji.trim() || undefined,
+    );
     reset();
     onDismiss();
   };
@@ -39,7 +46,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={handleDismiss}>
-        <Dialog.Title>🎭 Add a Vice</Dialog.Title>
+        <Dialog.Title>Add Vice</Dialog.Title>
         <Dialog.Content style={styles.content}>
           <TextInput
             label="Name *"
@@ -47,6 +54,13 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             onChangeText={setName}
             mode="outlined"
             autoFocus
+          />
+          <TextInput
+            label="Emoji (optional)"
+            value={emoji}
+            onChangeText={setEmoji}
+            mode="outlined"
+            maxLength={4}
           />
           <TextInput
             label="Description (optional)"
@@ -57,7 +71,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             numberOfLines={2}
           />
           <TextInput
-            label="⏱️ Cooldown (minutes) *"
+            label="Cooldown (minutes) *"
             value={cooldownMinutes}
             onChangeText={setCooldownMinutes}
             mode="outlined"
@@ -73,7 +87,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             mode="contained"
             onPress={handleSave}
             disabled={!name.trim() || !cooldownValid}>
-            Save 🎉
+            Save
           </Button>
         </Dialog.Actions>
       </Dialog>
