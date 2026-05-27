@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
-import {Button, Dialog, HelperText, Portal, TextInput} from 'react-native-paper';
+import {Button, Dialog, HelperText, Portal, Text, TextInput} from 'react-native-paper';
 import {useViceStore} from '../store/viceStore';
+import EmojiPicker from './EmojiPicker';
 
 interface Props {
   visible: boolean;
@@ -16,7 +17,9 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const [cooldownMinutes, setCooldownMinutes] = useState('60');
 
   const cooldownValid =
-    cooldownMinutes !== '' && !isNaN(Number(cooldownMinutes)) && Number(cooldownMinutes) > 0;
+    cooldownMinutes !== '' &&
+    !isNaN(Number(cooldownMinutes)) &&
+    Number(cooldownMinutes) > 0;
 
   const reset = () => {
     setName('');
@@ -32,7 +35,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
       trimmedName,
       Math.round(Number(cooldownMinutes)),
       description.trim() || undefined,
-      emoji.trim() || undefined,
+      emoji || undefined,
     );
     reset();
     onDismiss();
@@ -55,13 +58,10 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             mode="outlined"
             autoFocus
           />
-          <TextInput
-            label="Emoji (optional)"
-            value={emoji}
-            onChangeText={setEmoji}
-            mode="outlined"
-            maxLength={4}
-          />
+          <Text variant="labelMedium" style={styles.emojiLabel}>
+            Icon (optional — tap to select)
+          </Text>
+          <EmojiPicker value={emoji} onChange={setEmoji} />
           <TextInput
             label="Description (optional)"
             value={description}
@@ -97,4 +97,5 @@ export default function AddViceModal({visible, onDismiss}: Props) {
 
 const styles = StyleSheet.create({
   content: {gap: 12},
+  emojiLabel: {marginBottom: -4},
 });

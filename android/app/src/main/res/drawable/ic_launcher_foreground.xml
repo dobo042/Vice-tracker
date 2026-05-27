@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive icon foreground — modern flat pint glass.
+  Viewport 108×108dp; safe zone is the inner 72×72dp (18–90 on each axis).
+  Design: white glass trapezoid, amber beer fill, cream foam cap (three circles).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Glass silhouette (white trapezoid) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 26,22 L 82,22 L 72,88 L 36,88 Z"/>
+
+    <!-- Beer fill (amber) -->
+    <path
+        android:fillColor="#FFB000"
+        android:pathData="M 31,28 L 77,28 L 67,83 L 41,83 Z"/>
+
+    <!-- Bubble highlights inside the beer -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M 46.5,52 A 3.5,3.5 0 0,0 53.5,52 A 3.5,3.5 0 0,0 46.5,52 Z"/>
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M 39.5,64 A 2.5,2.5 0 0,0 44.5,64 A 2.5,2.5 0 0,0 39.5,64 Z"/>
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M 56,44 A 2,2 0 0,0 60,44 A 2,2 0 0,0 56,44 Z"/>
+
+    <!-- Foam cap — three overlapping cream circles straddling the rim -->
+    <!-- Left bubble: cx=37 cy=19 r=9 -->
+    <path
+        android:fillColor="#FFF8DC"
+        android:pathData="M 28,19 A 9,9 0 0,0 46,19 A 9,9 0 0,0 28,19 Z"/>
+    <!-- Centre bubble (tallest): cx=54 cy=13 r=11 -->
+    <path
+        android:fillColor="#FFF8DC"
+        android:pathData="M 43,13 A 11,11 0 0,0 65,13 A 11,11 0 0,0 43,13 Z"/>
+    <!-- Right bubble: cx=71 cy=19 r=9 -->
+    <path
+        android:fillColor="#FFF8DC"
+        android:pathData="M 62,19 A 9,9 0 0,0 80,19 A 9,9 0 0,0 62,19 Z"/>
+
+</vector>
