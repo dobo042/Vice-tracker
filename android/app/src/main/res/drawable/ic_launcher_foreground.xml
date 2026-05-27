@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive icon foreground — minimalist white-outline pint glass.
-  Single continuous stroke path: flat left rim → 3 foam arches → flat right rim
-  → right wall → base → left wall (Z).
-  No fill. strokeLineCap/Join="round" for clean joins on every corner.
+  Adaptive icon foreground — British pub mug outline.
+  Single white stroke path (no fill):
+    flat left rim → 3 foam arches → flat right rim
+    → right wall → D-handle (r=14 right semicircle, bows to x=78)
+    → right wall to base → base → close (left wall).
+  Centred at (54,54); safe zone 18–90 comfortably respected with stroke/2 padding.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -18,14 +20,16 @@
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:pathData="
-            M 30,24
-            L 38,24
-            Q 44,12 50,24
-            Q 56,12 62,24
-            Q 68,12 74,24
-            L 78,24
-            L 70,90
-            L 38,90
+            M 30,32
+            L 36,32
+            Q 40,22 44,32
+            Q 48,22 52,32
+            Q 56,22 60,32
+            L 64,32
+            L 64,45
+            A 14,14 0 0,1 64,73
+            L 64,82
+            L 30,82
             Z"/>
 
 </vector>

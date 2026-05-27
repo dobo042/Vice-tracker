@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Keyboard, StyleSheet} from 'react-native';
 import {Button, Dialog, HelperText, Portal, Text, TextInput} from 'react-native-paper';
 import {useViceStore} from '../store/viceStore';
 import EmojiPicker from './EmojiPicker';
@@ -14,11 +14,25 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('');
   const [cooldownMinutes, setCooldownMinutes] = useState('60');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const cooldownValid =
     cooldownMinutes !== '' &&
     !isNaN(Number(cooldownMinutes)) &&
     Number(cooldownMinutes) > 0;
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   const reset = () => {
     setName('');
@@ -46,7 +60,10 @@ export default function AddViceModal({visible, onDismiss}: Props) {
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={handleDismiss}>
+      <Dialog
+        visible={visible}
+        onDismiss={handleDismiss}
+        style={keyboardHeight > 0 ? {marginBottom: keyboardHeight} : undefined}>
         <Dialog.Title>Add Vice</Dialog.Title>
         <Dialog.Content style={styles.content}>
           <TextInput
