@@ -12,21 +12,21 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   const {addVice} = useViceStore();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [cooldownHours, setCooldownHours] = useState('24');
+  const [cooldownMinutes, setCooldownMinutes] = useState('60');
 
   const cooldownValid =
-    cooldownHours !== '' && !isNaN(Number(cooldownHours)) && Number(cooldownHours) > 0;
+    cooldownMinutes !== '' && !isNaN(Number(cooldownMinutes)) && Number(cooldownMinutes) > 0;
 
   const reset = () => {
     setName('');
     setDescription('');
-    setCooldownHours('24');
+    setCooldownMinutes('60');
   };
 
   const handleSave = () => {
     const trimmedName = name.trim();
     if (!trimmedName || !cooldownValid) return;
-    addVice(trimmedName, Math.round(Number(cooldownHours) * 60), description.trim() || undefined);
+    addVice(trimmedName, Math.round(Number(cooldownMinutes)), description.trim() || undefined);
     reset();
     onDismiss();
   };
@@ -39,7 +39,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={handleDismiss}>
-        <Dialog.Title>Add Vice</Dialog.Title>
+        <Dialog.Title>🎭 Add a Vice</Dialog.Title>
         <Dialog.Content style={styles.content}>
           <TextInput
             label="Name *"
@@ -57,14 +57,14 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             numberOfLines={2}
           />
           <TextInput
-            label="Cooldown (hours) *"
-            value={cooldownHours}
-            onChangeText={setCooldownHours}
+            label="⏱️ Cooldown (minutes) *"
+            value={cooldownMinutes}
+            onChangeText={setCooldownMinutes}
             mode="outlined"
-            keyboardType="decimal-pad"
+            keyboardType="number-pad"
           />
-          {!cooldownValid && cooldownHours !== '' ? (
-            <HelperText type="error">Enter a positive number of hours</HelperText>
+          {!cooldownValid && cooldownMinutes !== '' ? (
+            <HelperText type="error">Enter a positive number of minutes</HelperText>
           ) : null}
         </Dialog.Content>
         <Dialog.Actions>
@@ -73,7 +73,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             mode="contained"
             onPress={handleSave}
             disabled={!name.trim() || !cooldownValid}>
-            Save
+            Save 🎉
           </Button>
         </Dialog.Actions>
       </Dialog>

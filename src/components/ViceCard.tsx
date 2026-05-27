@@ -23,8 +23,12 @@ function formatRemaining(vice: Vice): string {
 }
 
 function formatCooldown(minutes: number): string {
-  if (minutes % 1440 === 0) return `${minutes / 1440}d`;
-  if (minutes % 60 === 0) return `${minutes / 60}h`;
+  if (minutes >= 1440 && minutes % 1440 === 0) return `${minutes / 1440}d`;
+  if (minutes >= 60) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  }
   return `${minutes}m`;
 }
 
@@ -56,20 +60,24 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
 
   const cardBg =
     status === 'on-cooldown'
-      ? '#FDECEA'
+      ? (theme.dark ? '#3B1010' : '#FDECEA')
       : status === 'ready'
-      ? '#E8F5E9'
+      ? (theme.dark ? '#0D2B0D' : '#E8F5E9')
       : undefined;
 
   const statusColor =
     status === 'on-cooldown'
-      ? theme.colors.error
+      ? (theme.dark ? '#FF7070' : theme.colors.error)
       : status === 'ready'
-      ? '#2E7D32'
+      ? (theme.dark ? '#66BB6A' : '#2E7D32')
       : theme.colors.onSurfaceVariant;
 
   const statusLabel =
-    status === 'on-cooldown' ? remaining : status === 'ready' ? 'Ready!' : 'Not yet logged';
+    status === 'on-cooldown'
+      ? `⏳ ${remaining}`
+      : status === 'ready'
+      ? '✅ Ready!'
+      : '⚪ Not yet logged';
 
   return (
     <Card style={[styles.card, cardBg ? {backgroundColor: cardBg} : undefined]}>
@@ -79,7 +87,7 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
             {vice.name}
           </Text>
           <Text variant="labelMedium" style={{color: statusColor}}>
-            ● {statusLabel}
+            {statusLabel}
           </Text>
         </View>
         {vice.description ? (
@@ -90,12 +98,12 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
           </Text>
         ) : null}
         <Text variant="labelSmall" style={{color: theme.colors.outline, marginTop: 6}}>
-          Cooldown: {formatCooldown(vice.cooldownMinutes)}
+          ⏱️ Cooldown: {formatCooldown(vice.cooldownMinutes)}
         </Text>
       </Card.Content>
       <Card.Actions style={styles.actions}>
         <Button mode="contained" icon="check" onPress={onLogPress} style={styles.btn}>
-          Log
+          ✅ Log it!
         </Button>
         <Button
           mode="contained"
@@ -104,7 +112,7 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
           icon="delete"
           onPress={onDeletePress}
           style={styles.btn}>
-          Delete
+          🗑️ Delete
         </Button>
       </Card.Actions>
     </Card>

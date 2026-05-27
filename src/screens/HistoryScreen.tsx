@@ -30,7 +30,7 @@ function HistoryCard({entry, onRemove}: HistoryCardProps) {
             </Text>
           ) : null}
           <Text variant="labelSmall" style={{color: theme.colors.outline, marginTop: 4}}>
-            Logged {formatted}
+            🕐 Logged {formatted}
           </Text>
         </View>
         <IconButton icon="close" onPress={onRemove} />
@@ -48,7 +48,7 @@ export default function HistoryScreen() {
       {entries.length === 0 ? (
         <View style={styles.empty}>
           <Text variant="headlineSmall" style={{color: theme.colors.onSurfaceVariant}}>
-            No history yet
+            📜 No history yet
           </Text>
           <Text
             variant="bodyMedium"

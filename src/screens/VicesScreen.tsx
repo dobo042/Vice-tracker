@@ -65,12 +65,12 @@ export default function VicesScreen() {
       {vices.length === 0 ? (
         <View style={styles.empty}>
           <Text variant="headlineSmall" style={{color: theme.colors.onSurfaceVariant}}>
-            No vices tracked yet
+            🎪 No vices tracked yet!
           </Text>
           <Text
             variant="bodyMedium"
             style={{color: theme.colors.onSurfaceVariant, marginTop: 8}}>
-            Tap + to add your first vice
+            Tap ➕ to add your first vice
           </Text>
         </View>
       ) : (
