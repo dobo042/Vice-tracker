@@ -22,4 +22,13 @@ data class WearVice(
                 java.time.Instant.parse(lastLoggedAt).toEpochMilli()
             return maxOf(0L, cooldownMinutes * 60_000L - elapsed)
         }
+
+    // 0f = just logged (cooldown started), 1f = ready to log again
+    val cooldownProgress: Float
+        get() {
+            if (lastLoggedAt == null || cooldownMinutes <= 0) return 1f
+            val elapsed = System.currentTimeMillis() -
+                java.time.Instant.parse(lastLoggedAt).toEpochMilli()
+            return (elapsed.toFloat() / (cooldownMinutes * 60_000L)).coerceIn(0f, 1f)
+        }
 }

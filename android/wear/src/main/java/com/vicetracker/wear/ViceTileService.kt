@@ -69,10 +69,9 @@ class ViceTileService : TileService() {
             )
             .build()
 
-        val col = LayoutElementBuilders.Column.Builder()
+        val outer = LayoutElementBuilders.Box.Builder()
             .setWidth(DimensionBuilders.expand())
             .setHeight(DimensionBuilders.expand())
-            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_START)
             .setModifiers(
                 ModifiersBuilders.Modifiers.Builder()
                     .setBackground(
@@ -88,107 +87,194 @@ class ViceTileService : TileService() {
                     )
                     .build()
             )
-            .addContent(
-                LayoutElementBuilders.Text.Builder()
-                    .setText("Vice Tracker")
-                    .setFontStyle(
-                        LayoutElementBuilders.FontStyle.Builder()
-                            .setSize(DimensionBuilders.sp(15f))
-                            .setColor(ColorBuilders.argb(0xFF4A4A00.toInt()))
-                            .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
-                            .build()
-                    )
-                    .setModifiers(
-                        ModifiersBuilders.Modifiers.Builder()
-                            .setPadding(
-                                ModifiersBuilders.Padding.Builder()
-                                    .setBottom(DimensionBuilders.dp(6f))
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
-            )
 
         if (vices.isEmpty()) {
-            col.addContent(
-                LayoutElementBuilders.Text.Builder()
-                    .setText("No vices yet")
-                    .setFontStyle(
-                        LayoutElementBuilders.FontStyle.Builder()
-                            .setSize(DimensionBuilders.sp(12f))
-                            .setColor(ColorBuilders.argb(0xFF888888.toInt()))
-                            .build()
-                    )
-                    .build()
-            )
-        } else {
-            vices.take(5).forEach { vice ->
-                col.addContent(viceRow(vice))
-            }
+            outer.addContent(centeredText("No vices yet", 0xFF888888.toInt(), 13f))
+            return outer.build()
         }
 
-        return col.build()
+        val primary = vices[0]
+
+        // Layer 1: outermost ring (vice 1)
+        outer.addContent(arcRing(primary, ringThicknessDp = 6f, paddingDp = 0f))
+
+        // Layer 2: middle ring (vice 2, if present)
+        if (vices.size >= 2) {
+            outer.addContent(arcRing(vices[1], ringThicknessDp = 5f, paddingDp = 10f))
+        }
+
+        // Layer 3: inner ring (vice 3, if present)
+        if (vices.size >= 3) {
+            outer.addContent(arcRing(vices[2], ringThicknessDp = 4f, paddingDp = 19f))
+        }
+
+        // Center label
+        val innerPad = when {
+            vices.size >= 3 -> 30f
+            vices.size >= 2 -> 20f
+            else -> 12f
+        }
+        outer.addContent(centerContent(primary, innerPad))
+
+        return outer.build()
     }
 
-    private fun viceRow(vice: WearVice): LayoutElementBuilders.LayoutElement {
-        val dotColor = when {
-            vice.isOnCooldown -> 0xFFE53935.toInt()
-            vice.lastLoggedAt != null -> 0xFF43A047.toInt()
-            else -> 0xFF888888.toInt()
-        }
-        val label = if (vice.logCount > 0) "${vice.name} ×${vice.logCount}" else vice.name
+    // Returns a Box (potentially padded inward) containing track + progress arcs
+    private fun arcRing(
+        vice: WearVice,
+        ringThicknessDp: Float,
+        paddingDp: Float,
+    ): LayoutElementBuilders.LayoutElement {
+        val progressDegrees = maxOf(2f, vice.cooldownProgress * 360f)
+        val statusColor = arcColor(vice)
 
-        return LayoutElementBuilders.Row.Builder()
+        val trackArc = LayoutElementBuilders.Arc.Builder()
+            .setAnchorAngle(DimensionBuilders.degrees(0f))
+            .addContent(
+                LayoutElementBuilders.ArcLine.Builder()
+                    .setLength(DimensionBuilders.degrees(360f))
+                    .setThickness(DimensionBuilders.dp(ringThicknessDp))
+                    .setColor(ColorBuilders.argb(0xFF2E2E2E.toInt()))
+                    .build()
+            )
+            .build()
+
+        val progressArc = LayoutElementBuilders.Arc.Builder()
+            .setAnchorAngle(DimensionBuilders.degrees(0f))
+            .addContent(
+                LayoutElementBuilders.ArcLine.Builder()
+                    .setLength(DimensionBuilders.degrees(progressDegrees))
+                    .setThickness(DimensionBuilders.dp(ringThicknessDp))
+                    .setColor(ColorBuilders.argb(statusColor))
+                    .build()
+            )
+            .build()
+
+        val ringBox = LayoutElementBuilders.Box.Builder()
             .setWidth(DimensionBuilders.expand())
-            .setHeight(DimensionBuilders.wrap())
-            .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
-            .setModifiers(
+            .setHeight(DimensionBuilders.expand())
+            .addContent(trackArc)
+            .addContent(progressArc)
+
+        if (paddingDp > 0f) {
+            ringBox.setModifiers(
                 ModifiersBuilders.Modifiers.Builder()
                     .setPadding(
                         ModifiersBuilders.Padding.Builder()
-                            .setBottom(DimensionBuilders.dp(3f))
+                            .setStart(DimensionBuilders.dp(paddingDp))
+                            .setEnd(DimensionBuilders.dp(paddingDp))
+                            .setTop(DimensionBuilders.dp(paddingDp))
+                            .setBottom(DimensionBuilders.dp(paddingDp))
                             .build()
                     )
                     .build()
             )
-            .addContent(
-                LayoutElementBuilders.Box.Builder()
-                    .setWidth(DimensionBuilders.dp(6f))
-                    .setHeight(DimensionBuilders.dp(6f))
-                    .setModifiers(
-                        ModifiersBuilders.Modifiers.Builder()
-                            .setBackground(
-                                ModifiersBuilders.Background.Builder()
-                                    .setColor(ColorBuilders.argb(dotColor))
-                                    .setCorner(
-                                        ModifiersBuilders.Corner.Builder()
-                                            .setRadius(DimensionBuilders.dp(3f))
-                                            .build()
-                                    )
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
-            )
-            .addContent(
-                LayoutElementBuilders.Spacer.Builder()
-                    .setWidth(DimensionBuilders.dp(5f))
-                    .build()
-            )
+        }
+
+        return ringBox.build()
+    }
+
+    private fun centerContent(
+        primary: WearVice,
+        innerPadDp: Float,
+    ): LayoutElementBuilders.LayoutElement {
+        val statusText = when {
+            primary.isOnCooldown -> {
+                val h = primary.remainingMs / 3_600_000
+                val m = (primary.remainingMs % 3_600_000) / 60_000
+                if (h > 0) "${h}h ${m}m" else "${m}m"
+            }
+            primary.lastLoggedAt != null -> "Ready!"
+            else -> "Tap to open"
+        }
+        val statusColor = when {
+            primary.isOnCooldown -> 0xFFE53935.toInt()
+            primary.lastLoggedAt != null -> 0xFF43A047.toInt()
+            else -> 0xFF888888.toInt()
+        }
+
+        val nameText = if (primary.logCount > 0)
+            "${primary.name} ×${primary.logCount}"
+        else
+            primary.name
+
+        val col = LayoutElementBuilders.Column.Builder()
+            .setWidth(DimensionBuilders.wrap())
+            .setHeight(DimensionBuilders.wrap())
+            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
             .addContent(
                 LayoutElementBuilders.Text.Builder()
-                    .setText(label)
+                    .setText(nameText)
                     .setFontStyle(
                         LayoutElementBuilders.FontStyle.Builder()
-                            .setSize(DimensionBuilders.sp(13f))
+                            .setSize(DimensionBuilders.sp(14f))
                             .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
+                            .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
                             .build()
                     )
                     .setMaxLines(1)
                     .build()
             )
+            .addContent(
+                LayoutElementBuilders.Text.Builder()
+                    .setText(statusText)
+                    .setFontStyle(
+                        LayoutElementBuilders.FontStyle.Builder()
+                            .setSize(DimensionBuilders.sp(12f))
+                            .setColor(ColorBuilders.argb(statusColor))
+                            .build()
+                    )
+                    .build()
+            )
             .build()
+
+        return LayoutElementBuilders.Box.Builder()
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
+            .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setPadding(
+                        ModifiersBuilders.Padding.Builder()
+                            .setStart(DimensionBuilders.dp(innerPadDp))
+                            .setEnd(DimensionBuilders.dp(innerPadDp))
+                            .setTop(DimensionBuilders.dp(innerPadDp))
+                            .setBottom(DimensionBuilders.dp(innerPadDp))
+                            .build()
+                    )
+                    .build()
+            )
+            .addContent(col)
+            .build()
+    }
+
+    private fun centeredText(
+        text: String,
+        color: Int,
+        sizeSp: Float,
+    ): LayoutElementBuilders.LayoutElement =
+        LayoutElementBuilders.Box.Builder()
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
+            .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
+            .addContent(
+                LayoutElementBuilders.Text.Builder()
+                    .setText(text)
+                    .setFontStyle(
+                        LayoutElementBuilders.FontStyle.Builder()
+                            .setSize(DimensionBuilders.sp(sizeSp))
+                            .setColor(ColorBuilders.argb(color))
+                            .build()
+                    )
+                    .build()
+            )
+            .build()
+
+    private fun arcColor(vice: WearVice): Int = when {
+        vice.isOnCooldown -> 0xFFE53935.toInt()
+        vice.lastLoggedAt != null -> 0xFF43A047.toInt()
+        else -> 0xFF4A4A00.toInt()
     }
 }
