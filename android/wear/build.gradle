@@ -7,7 +7,7 @@ android {
     namespace "com.vicetracker.wear"
 
     defaultConfig {
-        applicationId "com.vicetracker.wear"
+        applicationId "com.vicetracker"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
