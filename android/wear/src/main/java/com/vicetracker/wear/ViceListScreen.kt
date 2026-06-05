@@ -19,7 +19,7 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.material.Text
 import kotlinx.coroutines.delay
 
-private val Purple = Color(0xFF6750A4)
+private val Olive = Color(0xFF4A4A00)
 private val CooldownBg = Color(0xFFFDECEA)
 private val ReadyBg = Color(0xFFE8F5E9)
 private val DefaultBg = Color(0xFFFFFFFF)
@@ -84,7 +84,7 @@ fun ViceCard(
     }
 
     val bgColor by animateColorAsState(
-        targetValue = if (flashColor) Purple else normalBg,
+        targetValue = if (flashColor) Olive else normalBg,
         animationSpec = tween(durationMillis = 150),
         label = "cardBg",
     )
@@ -118,12 +118,12 @@ fun ViceCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (flashColor) Color.White else Purple)
+                            .background(if (flashColor) Color.White else Olive)
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                     ) {
                         Text(
                             text = "×${vice.logCount}",
-                            color = if (flashColor) Purple else Color.White,
+                            color = if (flashColor) Olive else Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                         )
