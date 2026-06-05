@@ -2,6 +2,7 @@ package com.vicetracker.wear
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,14 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.HorizontalPageIndicator
 import androidx.wear.compose.material.PageIndicatorState
-import androidx.wear.compose.material.ProgressIndicatorDefaults
 import androidx.wear.compose.material.Text
 import kotlinx.coroutines.delay
 
@@ -128,26 +129,30 @@ fun ViceClockFace(
             .clickable(enabled = !isLogging, onClick = onTap),
         contentAlignment = Alignment.Center,
     ) {
-        // Track ring (full circle, dark grey)
-        CircularProgressIndicator(
-            progress = 1f,
-            modifier = Modifier.fillMaxSize().padding(4.dp),
-            strokeWidth = 8.dp,
-            colors = ProgressIndicatorDefaults.progressIndicatorColors(
-                indicatorColor = TrackColor,
-                trackColor = Color.Transparent,
-            ),
-        )
-        // Progress arc — sweeps from 12 o'clock clockwise as cooldown elapses
-        CircularProgressIndicator(
-            progress = vice.cooldownProgress,
-            modifier = Modifier.fillMaxSize().padding(4.dp),
-            strokeWidth = 8.dp,
-            colors = ProgressIndicatorDefaults.progressIndicatorColors(
-                indicatorColor = arcColor,
-                trackColor = Color.Transparent,
-            ),
-        )
+        // Arc drawn with Canvas — starts at 12 o'clock, sweeps clockwise as cooldown elapses
+        val sweepAngle = vice.cooldownProgress * 360f
+        Canvas(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+            val strokePx = 8.dp.toPx()
+            val arcStyle = Stroke(width = strokePx, cap = StrokeCap.Round)
+            // Full-circle grey track
+            drawArc(
+                color = TrackColor,
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = arcStyle,
+            )
+            // Coloured progress arc (only draw if there's something to show)
+            if (sweepAngle > 1f) {
+                drawArc(
+                    color = arcColor,
+                    startAngle = -90f,
+                    sweepAngle = sweepAngle,
+                    useCenter = false,
+                    style = arcStyle,
+                )
+            }
+        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
