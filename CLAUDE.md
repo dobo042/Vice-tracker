@@ -46,8 +46,8 @@ Vice-tracker/
 └── src/
     ├── types/index.ts        # Vice, HistoryEntry
     ├── store/
-    │   ├── viceStore.ts      # vices[], addVice, logVice, deleteVice (persisted)
-    │   └── historyStore.ts   # entries[], addEntry, deleteEntry, clearHistory (persisted)
+    │   ├── viceStore.ts      # vices[], addVice, logVice, resetViceCount, deleteVice (persisted)
+    │   └── historyStore.ts   # entries[], addEntry (records logCount), deleteEntry, clearHistory (persisted)
     ├── navigation/
     │   ├── types.ts          # RootStackParamList: Vices | History
     │   └── AppNavigator.tsx  # Stack navigator, purple header
@@ -55,9 +55,10 @@ Vice-tracker/
     │   ├── VicesScreen.tsx   # Vice list + FAB + delete dialog; schedules notifications
     │   └── HistoryScreen.tsx # Logged-before-delete entries
     ├── components/
-    │   ├── ViceCard.tsx          # Red/green status, Log button, Delete button
-    │   ├── AddViceModal.tsx      # Name + description + cooldown (hours)
-    │   └── DeleteConfirmDialog.tsx  # Cancel / Delete Only / Log & Delete
+    │   ├── ViceCard.tsx              # Red/green status, ×N count badge, Log/Reset/Delete buttons
+    │   ├── AddViceModal.tsx          # Name + description + cooldown (hours)
+    │   ├── DeleteConfirmDialog.tsx   # Cancel / Delete Only / Log & Delete
+    │   └── ResetConfirmDialog.tsx    # Cancel / Reset Only / Log & Reset
     └── utils/
         └── notifications.ts  # notifee wrapper: setup, requestPermissions, schedule, cancel
 ```
@@ -98,8 +99,11 @@ Every push to `main` or `claude/**` triggers `.github/workflows/build-android.ym
 
 1. Sets up JDK 17 and Android SDK on an Ubuntu runner
 2. Runs `npm ci`
-3. Runs `./gradlew assembleDebug`
-4. Uploads `app-debug.apk` as a workflow artifact (retained 14 days)
+3. Pre-bundles JS: `npx react-native bundle --platform android --dev false ...` → `android/app/src/main/assets/index.android.bundle`
+4. Runs `./gradlew assembleDebug`
+5. Uploads `app-debug.apk` as a workflow artifact (retained 14 days)
+
+> **Important:** the JS must be bundled before Gradle runs. Without the pre-bundle step, the standalone APK crashes with "Unable to load script" because there is no Metro server to connect to.
 
 **To download the APK:**
 1. Go to the repository on GitHub → **Actions** tab
@@ -143,10 +147,15 @@ cd android && ./gradlew assembleDebug
 ## Architecture Conventions
 
 ### Vice lifecycle
-1. **Add** — name, optional description, cooldown in hours (stored as `cooldownMinutes`)
-2. **Log** — sets `lastLoggedAt`, card turns red, notifee schedules a `TIMESTAMP` trigger notification
+1. **Add** — name, optional description, cooldown in hours (stored as `cooldownMinutes`); `logCount` starts at `0`
+2. **Log** — increments `logCount`, sets `lastLoggedAt`, card turns red, notifee schedules a `TIMESTAMP` trigger notification; a `×N` badge appears on the card
 3. **Cooldown elapses** — notification fires ("You can X again!"), card turns green
-4. **Delete** — cancels pending notification via `notifee.cancelNotification('vice-<id>')`; optionally saves to history first
+4. **Reset** — `ResetConfirmDialog` offers "Reset Only" (zeroes count) or "Log & Reset" (saves a `HistoryEntry` with the count, then zeroes); the vice itself is not deleted
+5. **Delete** — cancels pending notification via `notifee.cancelNotification('vice-<id>')`; optionally saves to history first
+
+### Count badge
+- Rendered as a plain styled `View` + `Text` (not a `Chip`) to avoid icon-rendering issues with react-native-vector-icons in bundled builds
+- Uses `theme.colors.primary` background, white bold text, font size 13
 
 ### State Management (Zustand)
 - One store per domain: `viceStore`, `historyStore`
@@ -183,6 +192,11 @@ cd android && ./gradlew assembleDebug
 ### Testing
 - Test files live next to the file they test: `ViceCard.test.tsx` beside `ViceCard.tsx`
 - Use Jest + react-test-renderer for snapshot / behaviour tests
+
+## Known Issues / Gotchas
+
+- **App name must match exactly**: `MainActivity.kt` `getMainComponentName()` must return `"ViceTracker"` (matching `app.json` `name`). A mismatch causes `Invariant Violation: "X" has not been registered` on launch.
+- **Chip icon rendering**: `react-native-paper` `<Chip icon="...">` uses react-native-vector-icons internally; icon glyphs sometimes render as broken barcodes in bundled builds. Prefer a plain `View`+`Text` badge for custom indicators.
 
 ## Key Dependency Notes
 

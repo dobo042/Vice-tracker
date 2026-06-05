@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {Button, Card, Chip, Text, useTheme} from 'react-native-paper';
+import {Button, Card, Text, useTheme} from 'react-native-paper';
 import type {Vice} from '../types';
 
 type ViceStatus = 'never-logged' | 'on-cooldown' | 'ready';
@@ -83,9 +83,9 @@ export default function ViceCard({vice, onLogPress, onResetPress, onDeletePress}
           </Text>
           <View style={styles.headerRight}>
             {count > 0 && (
-              <Chip compact icon="counter" style={styles.countChip}>
-                ×{count}
-              </Chip>
+              <View style={[styles.countBadge, {backgroundColor: theme.colors.primary}]}>
+                <Text style={styles.countBadgeText}>×{count}</Text>
+              </View>
             )}
             <Text variant="labelMedium" style={{color: statusColor}}>
               ● {statusLabel}
@@ -135,7 +135,17 @@ const styles = StyleSheet.create({
   header: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
   name: {flex: 1, marginRight: 8},
   headerRight: {alignItems: 'flex-end', gap: 4},
-  countChip: {height: 24},
+  countBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    alignSelf: 'flex-end',
+  },
+  countBadgeText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   actions: {paddingHorizontal: 16, paddingBottom: 12, gap: 8},
   btn: {flex: 1},
 });
