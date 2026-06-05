@@ -1,5 +1,5 @@
-import React, {useLayoutEffect, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
+import {FlatList, NativeEventEmitter, NativeModules, Platform, StyleSheet, View} from 'react-native';
 import {FAB, IconButton, Text, useTheme} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationProp} from '@react-navigation/stack';
@@ -18,6 +18,17 @@ import type {RootStackParamList} from '../navigation/types';
 
 type VicesNavProp = StackNavigationProp<RootStackParamList, 'Vices'>;
 
+const {WearBridge} = NativeModules;
+
+function pushVicesToWatch(vices: Vice[]) {
+  if (Platform.OS !== 'android' || !WearBridge) return;
+  try {
+    WearBridge.pushVices(JSON.stringify(vices));
+  } catch {
+    // Wear not available — silently ignore
+  }
+}
+
 export default function VicesScreen() {
   const theme = useTheme();
   const navigation = useNavigation<VicesNavProp>();
@@ -26,6 +37,23 @@ export default function VicesScreen() {
   const [addVisible, setAddVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Vice | null>(null);
   const [resetTarget, setResetTarget] = useState<Vice | null>(null);
+
+  // Sync vice list to watch whenever it changes
+  useEffect(() => {
+    pushVicesToWatch(vices);
+  }, [vices]);
+
+  // Listen for log events sent from the watch
+  useEffect(() => {
+    if (Platform.OS !== 'android' || !WearBridge) return;
+    const emitter = new NativeEventEmitter(WearBridge);
+    const sub = emitter.addListener('ViceLoggedOnWatch', (viceId: string) => {
+      const vice = vices.find(v => v.id === viceId);
+      if (vice) handleLogVice(vice);
+    });
+    return () => sub.remove();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vices]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
