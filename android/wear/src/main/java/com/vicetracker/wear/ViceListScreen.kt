@@ -45,52 +45,70 @@ private val TrackColor = Color(0xFF2E2E2E)
 fun ViceListScreen(
     vices: List<WearVice>,
     loggingId: String?,
+    disconnected: Boolean = false,
     onLogVice: (String) -> Unit,
 ) {
-    if (vices.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize().background(Color.Black),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "No vices yet.\nOpen phone app to add.",
-                color = Color.White,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(16.dp),
-            )
-        }
-        return
-    }
-
-    val pagerState = rememberPagerState(pageCount = { vices.size })
-
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-        ) { page ->
-            val vice = vices[page]
-            ViceClockFace(
-                vice = vice,
-                isLogging = loggingId == vice.id,
-                onTap = { onLogVice(vice.id) },
-            )
+        if (vices.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "No vices yet.\nOpen phone app to add.",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+        } else {
+            val pagerState = rememberPagerState(pageCount = { vices.size })
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+            ) { page ->
+                val vice = vices[page]
+                ViceClockFace(
+                    vice = vice,
+                    isLogging = loggingId == vice.id,
+                    onTap = { onLogVice(vice.id) },
+                )
+            }
+
+            if (vices.size > 1) {
+                val indicatorState = remember(vices.size) {
+                    object : PageIndicatorState {
+                        override val pageCount get() = vices.size
+                        override val pageOffset get() = pagerState.currentPageOffsetFraction
+                        override val selectedPage get() = pagerState.currentPage
+                    }
+                }
+                HorizontalPageIndicator(
+                    pageIndicatorState = indicatorState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 6.dp),
+                )
+            }
         }
 
-        if (vices.size > 1) {
-            val indicatorState = remember(vices.size) {
-                object : PageIndicatorState {
-                    override val pageCount get() = vices.size
-                    override val pageOffset get() = pagerState.currentPageOffsetFraction
-                    override val selectedPage get() = pagerState.currentPage
-                }
-            }
-            HorizontalPageIndicator(
-                pageIndicatorState = indicatorState,
+        // Disconnected banner — shown briefly when the phone can't be reached
+        if (disconnected) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 6.dp),
-            )
+                    .align(Alignment.TopCenter)
+                    .padding(top = 24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF880000))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "No phone connection",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                )
+            }
         }
     }
 }

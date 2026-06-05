@@ -1,5 +1,5 @@
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {FlatList, NativeEventEmitter, NativeModules, Platform, StyleSheet, View} from 'react-native';
+import {AppState, FlatList, NativeEventEmitter, NativeModules, Platform, StyleSheet, View} from 'react-native';
 import {FAB, IconButton, Text, useTheme} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationProp} from '@react-navigation/stack';
@@ -47,6 +47,14 @@ export default function VicesScreen() {
     vicesRef.current = vices;
     pushVicesToWatch(vices);
   }, [vices]);
+
+  // Re-push to watch whenever the phone app comes to foreground (covers resume after background)
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') pushVicesToWatch(vicesRef.current);
+    });
+    return () => sub.remove();
+  }, []);
 
   // Subscribe to watch events exactly once
   useEffect(() => {

@@ -29,9 +29,13 @@ class WearBridgeModule(reactContext: ReactApplicationContext) :
     }
 
     private fun emit(event: String, payload: Any) {
-        reactApplicationContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit(event, payload)
+        try {
+            reactApplicationContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit(event, payload)
+        } catch (_: Exception) {
+            // Bridge not ready; next Data Layer sync will reconcile state
+        }
     }
 
     // Required for RN event emitters — no-op stubs

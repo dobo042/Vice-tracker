@@ -19,9 +19,11 @@ class WearMainActivity : ComponentActivity() {
         setContent {
             val vices by viewModel.vices.collectAsState()
             val loggingId by viewModel.loggingId.collectAsState()
+            val disconnected by viewModel.disconnected.collectAsState()
             ViceListScreen(
                 vices = vices,
                 loggingId = loggingId,
+                disconnected = disconnected,
                 onLogVice = viewModel::logVice,
             )
         }

@@ -108,13 +108,13 @@ class ViceTileService : TileService() {
             outer.addContent(arcRing(vices[2], ringThicknessDp = 4f, paddingDp = 19f))
         }
 
-        // Center label
+        // Center: colored dot + name for each visible ring so they're identifiable
         val innerPad = when {
             vices.size >= 3 -> 30f
             vices.size >= 2 -> 20f
             else -> 12f
         }
-        outer.addContent(centerContent(primary, innerPad))
+        outer.addContent(centerContent(vices.take(3), innerPad))
 
         return outer.build()
     }
@@ -174,59 +174,72 @@ class ViceTileService : TileService() {
         return ringBox.build()
     }
 
+    // Shows one labeled row per vice — colored dot (matches its ring) + truncated name + count
     private fun centerContent(
-        primary: WearVice,
+        vices: List<WearVice>,
         innerPadDp: Float,
     ): LayoutElementBuilders.LayoutElement {
-        val statusText = when {
-            primary.isOnCooldown -> {
-                val h = primary.remainingMs / 3_600_000
-                val m = (primary.remainingMs % 3_600_000) / 60_000
-                if (h > 0) "${h}h ${m}m" else "${m}m"
-            }
-            primary.lastLoggedAt != null -> "Ready!"
-            else -> "Tap to open"
-        }
-        val statusColor = when {
-            primary.isOnCooldown -> 0xFFE53935.toInt()
-            primary.lastLoggedAt != null -> 0xFF43A047.toInt()
-            else -> 0xFF888888.toInt()
-        }
-
-        val nameText = if (primary.logCount > 0)
-            "${primary.name} ×${primary.logCount}"
-        else
-            primary.name
-
         val col = LayoutElementBuilders.Column.Builder()
             .setWidth(DimensionBuilders.wrap())
             .setHeight(DimensionBuilders.wrap())
-            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
-            .addContent(
-                LayoutElementBuilders.Text.Builder()
-                    .setText(nameText)
-                    .setFontStyle(
-                        LayoutElementBuilders.FontStyle.Builder()
-                            .setSize(DimensionBuilders.sp(14f))
-                            .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
-                            .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
-                            .build()
-                    )
-                    .setMaxLines(1)
-                    .build()
-            )
-            .addContent(
-                LayoutElementBuilders.Text.Builder()
-                    .setText(statusText)
-                    .setFontStyle(
-                        LayoutElementBuilders.FontStyle.Builder()
-                            .setSize(DimensionBuilders.sp(12f))
-                            .setColor(ColorBuilders.argb(statusColor))
-                            .build()
-                    )
-                    .build()
-            )
-            .build()
+            .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_START)
+
+        vices.forEach { vice ->
+            val label = if (vice.logCount > 0) "${vice.name} ×${vice.logCount}" else vice.name
+            val dot = LayoutElementBuilders.Box.Builder()
+                .setWidth(DimensionBuilders.dp(6f))
+                .setHeight(DimensionBuilders.dp(6f))
+                .setModifiers(
+                    ModifiersBuilders.Modifiers.Builder()
+                        .setBackground(
+                            ModifiersBuilders.Background.Builder()
+                                .setColor(ColorBuilders.argb(arcColor(vice)))
+                                .setCorner(
+                                    ModifiersBuilders.Corner.Builder()
+                                        .setRadius(DimensionBuilders.dp(3f))
+                                        .build()
+                                )
+                                .build()
+                        )
+                        .build()
+                )
+                .build()
+
+            val row = LayoutElementBuilders.Row.Builder()
+                .setWidth(DimensionBuilders.wrap())
+                .setHeight(DimensionBuilders.wrap())
+                .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
+                .setModifiers(
+                    ModifiersBuilders.Modifiers.Builder()
+                        .setPadding(
+                            ModifiersBuilders.Padding.Builder()
+                                .setBottom(DimensionBuilders.dp(2f))
+                                .build()
+                        )
+                        .build()
+                )
+                .addContent(dot)
+                .addContent(
+                    LayoutElementBuilders.Spacer.Builder()
+                        .setWidth(DimensionBuilders.dp(4f))
+                        .build()
+                )
+                .addContent(
+                    LayoutElementBuilders.Text.Builder()
+                        .setText(label)
+                        .setFontStyle(
+                            LayoutElementBuilders.FontStyle.Builder()
+                                .setSize(DimensionBuilders.sp(12f))
+                                .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
+                                .build()
+                        )
+                        .setMaxLines(1)
+                        .build()
+                )
+                .build()
+
+            col.addContent(row)
+        }
 
         return LayoutElementBuilders.Box.Builder()
             .setWidth(DimensionBuilders.expand())
@@ -245,7 +258,7 @@ class ViceTileService : TileService() {
                     )
                     .build()
             )
-            .addContent(col)
+            .addContent(col.build())
             .build()
     }
 

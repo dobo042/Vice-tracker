@@ -14,7 +14,15 @@ class WearDataService : WearableListenerService() {
     }
 
     private fun handleLog(viceId: String) {
-        rnModule()?.emitViceLogged(viceId)
+        val module = rnModule()
+        if (module != null) {
+            module.emitViceLogged(viceId)
+            return
+        }
+        // RN context not ready yet — retry once on the main thread after a short delay
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            rnModule()?.emitViceLogged(viceId)
+        }, 800)
     }
 
     private fun handleRequest() {
