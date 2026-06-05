@@ -30,10 +30,11 @@
         android:exported="true">
         <intent-filter>
           <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-          <data
-            android:scheme="wear"
-            android:host="*"
-            android:pathPrefix="/log" />
+          <data android:scheme="wear" android:host="*" android:pathPrefix="/log" />
+        </intent-filter>
+        <intent-filter>
+          <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+          <data android:scheme="wear" android:host="*" android:path="/request" />
         </intent-filter>
       </service>
     </application>

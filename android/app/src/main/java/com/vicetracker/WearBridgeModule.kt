@@ -21,9 +21,17 @@ class WearBridgeModule(reactContext: ReactApplicationContext) :
     }
 
     fun emitViceLogged(viceId: String) {
+        emit("ViceLoggedOnWatch", viceId)
+    }
+
+    fun emitSyncRequest() {
+        emit("WatchRequestedSync", true)
+    }
+
+    private fun emit(event: String, payload: Any) {
         reactApplicationContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit("ViceLoggedOnWatch", viceId)
+            .emit(event, payload)
     }
 
     // Required for RN event emitters — no-op stubs

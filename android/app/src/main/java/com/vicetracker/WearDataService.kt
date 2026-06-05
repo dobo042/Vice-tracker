@@ -6,13 +6,18 @@ import com.google.android.gms.wearable.WearableListenerService
 class WearDataService : WearableListenerService() {
 
     override fun onMessageReceived(event: MessageEvent) {
-        if (event.path.startsWith("/log/")) {
-            val viceId = event.path.removePrefix("/log/")
-            // Find the WearBridgeModule instance and emit to JS
-            val app = application as? MainApplication ?: return
-            app.reactNativeHost.reactInstanceManager.currentReactContext
-                ?.getNativeModule(WearBridgeModule::class.java)
-                ?.emitViceLogged(viceId)
+        val module = (application as? MainApplication)
+            ?.reactNativeHost
+            ?.reactInstanceManager
+            ?.currentReactContext
+            ?.getNativeModule(WearBridgeModule::class.java)
+            ?: return
+
+        when {
+            event.path.startsWith("/log/") ->
+                module.emitViceLogged(event.path.removePrefix("/log/"))
+            event.path == "/request" ->
+                module.emitSyncRequest()
         }
     }
 }

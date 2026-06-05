@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.google.android.gms.wearable.Wearable
 
 class WearMainActivity : ComponentActivity() {
 
@@ -21,6 +22,16 @@ class WearMainActivity : ComponentActivity() {
                 loggingId = loggingId,
                 onLogVice = viewModel::logVice,
             )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Ask the phone for the latest vice list every time the screen becomes visible
+        Wearable.getNodeClient(this).connectedNodes.addOnSuccessListener { nodes ->
+            nodes.forEach { node ->
+                Wearable.getMessageClient(this).sendMessage(node.id, "/request", ByteArray(0))
+            }
         }
     }
 }

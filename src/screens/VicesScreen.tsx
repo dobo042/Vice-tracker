@@ -43,15 +43,22 @@ export default function VicesScreen() {
     pushVicesToWatch(vices);
   }, [vices]);
 
-  // Listen for log events sent from the watch
+  // Listen for events sent from the watch
   useEffect(() => {
     if (Platform.OS !== 'android' || !WearBridge) return;
     const emitter = new NativeEventEmitter(WearBridge);
-    const sub = emitter.addListener('ViceLoggedOnWatch', (viceId: string) => {
+    const logSub = emitter.addListener('ViceLoggedOnWatch', (viceId: string) => {
       const vice = vices.find(v => v.id === viceId);
       if (vice) handleLogVice(vice);
     });
-    return () => sub.remove();
+    // Watch opened and asked for the latest data
+    const syncSub = emitter.addListener('WatchRequestedSync', () => {
+      pushVicesToWatch(vices);
+    });
+    return () => {
+      logSub.remove();
+      syncSub.remove();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vices]);
 
