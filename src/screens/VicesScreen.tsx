@@ -1,4 +1,4 @@
-import React, {useEffect, useLayoutEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {FlatList, NativeEventEmitter, NativeModules, Platform, StyleSheet, View} from 'react-native';
 import {FAB, IconButton, Text, useTheme} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
@@ -38,29 +38,33 @@ export default function VicesScreen() {
   const [deleteTarget, setDeleteTarget] = useState<Vice | null>(null);
   const [resetTarget, setResetTarget] = useState<Vice | null>(null);
 
-  // Sync vice list to watch whenever it changes
+  // Refs so event listener callbacks always see current values without re-subscribing
+  const vicesRef = useRef<Vice[]>(vices);
+  const handleLogViceRef = useRef<(vice: Vice) => void>(() => {});
+
+  // Keep refs in sync every render
   useEffect(() => {
+    vicesRef.current = vices;
     pushVicesToWatch(vices);
   }, [vices]);
 
-  // Listen for events sent from the watch
+  // Subscribe to watch events exactly once
   useEffect(() => {
     if (Platform.OS !== 'android' || !WearBridge) return;
     const emitter = new NativeEventEmitter(WearBridge);
     const logSub = emitter.addListener('ViceLoggedOnWatch', (viceId: string) => {
-      const vice = vices.find(v => v.id === viceId);
-      if (vice) handleLogVice(vice);
+      const vice = vicesRef.current.find(v => v.id === viceId);
+      if (vice) handleLogViceRef.current(vice);
     });
-    // Watch opened and asked for the latest data
     const syncSub = emitter.addListener('WatchRequestedSync', () => {
-      pushVicesToWatch(vices);
+      pushVicesToWatch(vicesRef.current);
     });
     return () => {
       logSub.remove();
       syncSub.remove();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vices]);
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -81,6 +85,7 @@ export default function VicesScreen() {
       lastLoggedAt: new Date().toISOString(),
     });
   };
+  handleLogViceRef.current = handleLogVice;
 
   const handleResetOnly = () => {
     if (!resetTarget) return;

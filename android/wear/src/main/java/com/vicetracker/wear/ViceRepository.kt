@@ -14,8 +14,12 @@ object ViceRepository {
     }
 
     fun updateFromJson(json: String) {
+        _vices.value = parseJson(json)
+    }
+
+    fun parseJson(json: String): List<WearVice> {
         val type = object : TypeToken<List<WearViceJson>>() {}.type
         val raw: List<WearViceJson> = Gson().fromJson(json, type)
-        update(raw.map { it.toWearVice() })
+        return raw.map { it.toWearVice() }
     }
 }

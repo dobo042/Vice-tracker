@@ -1,5 +1,6 @@
 package com.vicetracker.wear
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,6 +36,9 @@ class WearMainActivity : ComponentActivity() {
                 if (item.uri.path == "/vices") {
                     val json = DataMapItem.fromDataItem(item).dataMap
                         .getString("viceList") ?: return@forEach
+                    applicationContext
+                        .getSharedPreferences("WearViceCache", Context.MODE_PRIVATE)
+                        .edit().putString("vice_json", json).apply()
                     ViceRepository.updateFromJson(json)
                 }
             }

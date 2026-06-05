@@ -30,29 +30,18 @@ class ViceViewModel(app: Application) : AndroidViewModel(app) {
         _loggingId.value = viceId
         val context = getApplication<Application>()
 
+        // Haptic immediately so the tap feels responsive
+        context.getSystemService(Vibrator::class.java)
+            ?.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
+
+        // Send log message to phone — phone will push back updated vice list
         Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
             nodes.forEach { node ->
-                Wearable.getMessageClient(context).sendMessage(
-                    node.id,
-                    "/log/$viceId",
-                    ByteArray(0),
-                )
-            }
-            // Optimistically update local state so the UI responds immediately
-            _vices.value = _vices.value.map { v ->
-                if (v.id == viceId)
-                    v.copy(
-                        logCount = v.logCount + 1,
-                        lastLoggedAt = java.time.Instant.now().toString(),
-                    )
-                else v
+                Wearable.getMessageClient(context).sendMessage(node.id, "/log/$viceId", ByteArray(0))
             }
             _loggingId.value = null
         }.addOnFailureListener {
             _loggingId.value = null
         }
-
-        val vibrator = context.getSystemService(Vibrator::class.java)
-        vibrator?.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 }
