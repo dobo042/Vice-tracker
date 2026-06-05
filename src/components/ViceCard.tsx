@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {Button, Card, Text, useTheme} from 'react-native-paper';
+import {Button, Card, Chip, Text, useTheme} from 'react-native-paper';
 import type {Vice} from '../types';
 
 type ViceStatus = 'never-logged' | 'on-cooldown' | 'ready';
@@ -31,10 +31,11 @@ function formatCooldown(minutes: number): string {
 interface Props {
   vice: Vice;
   onLogPress: () => void;
+  onResetPress: () => void;
   onDeletePress: () => void;
 }
 
-export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
+export default function ViceCard({vice, onLogPress, onResetPress, onDeletePress}: Props) {
   const theme = useTheme();
   const [status, setStatus] = useState<ViceStatus>(() => getStatus(vice));
   const [remaining, setRemaining] = useState(() => formatRemaining(vice));
@@ -71,6 +72,8 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
   const statusLabel =
     status === 'on-cooldown' ? remaining : status === 'ready' ? 'Ready!' : 'Not yet logged';
 
+  const count = vice.logCount ?? 0;
+
   return (
     <Card style={[styles.card, cardBg ? {backgroundColor: cardBg} : undefined]}>
       <Card.Content>
@@ -78,9 +81,16 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
           <Text variant="titleLarge" style={styles.name}>
             {vice.name}
           </Text>
-          <Text variant="labelMedium" style={{color: statusColor}}>
-            ● {statusLabel}
-          </Text>
+          <View style={styles.headerRight}>
+            {count > 0 && (
+              <Chip compact icon="counter" style={styles.countChip}>
+                ×{count}
+              </Chip>
+            )}
+            <Text variant="labelMedium" style={{color: statusColor}}>
+              ● {statusLabel}
+            </Text>
+          </View>
         </View>
         {vice.description ? (
           <Text
@@ -97,6 +107,15 @@ export default function ViceCard({vice, onLogPress, onDeletePress}: Props) {
         <Button mode="contained" icon="check" onPress={onLogPress} style={styles.btn}>
           Log
         </Button>
+        {count > 0 && (
+          <Button
+            mode="outlined"
+            icon="restore"
+            onPress={onResetPress}
+            style={styles.btn}>
+            Reset
+          </Button>
+        )}
         <Button
           mode="contained"
           buttonColor={theme.colors.error}
@@ -115,6 +134,8 @@ const styles = StyleSheet.create({
   card: {marginBottom: 12},
   header: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
   name: {flex: 1, marginRight: 8},
+  headerRight: {alignItems: 'flex-end', gap: 4},
+  countChip: {height: 24},
   actions: {paddingHorizontal: 16, paddingBottom: 12, gap: 8},
   btn: {flex: 1},
 });

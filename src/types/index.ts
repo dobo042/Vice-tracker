@@ -5,6 +5,7 @@ export interface Vice {
   cooldownMinutes: number;
   lastLoggedAt?: string;
   createdAt: string;
+  logCount: number;
 }
 
 export interface HistoryEntry {
@@ -12,4 +13,5 @@ export interface HistoryEntry {
   viceName: string;
   viceDescription?: string;
   loggedAt: string;
+  logCount?: number;
 }

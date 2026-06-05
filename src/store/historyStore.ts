@@ -22,6 +22,7 @@ export const useHistoryStore = create<HistoryStore>()(
               viceName: vice.name,
               viceDescription: vice.description,
               loggedAt: new Date().toISOString(),
+              logCount: vice.logCount ?? 0,
             },
             ...state.entries,
           ],
