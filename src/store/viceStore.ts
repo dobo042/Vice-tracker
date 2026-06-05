@@ -7,6 +7,7 @@ interface ViceStore {
   vices: Vice[];
   addVice: (name: string, cooldownMinutes: number, description?: string) => void;
   logVice: (id: string) => void;
+  resetViceCount: (id: string) => void;
   deleteVice: (id: string) => void;
 }
 
@@ -24,13 +25,26 @@ export const useViceStore = create<ViceStore>()(
               description,
               cooldownMinutes,
               createdAt: new Date().toISOString(),
+              logCount: 0,
             },
           ],
         })),
       logVice: (id: string) =>
         set(state => ({
           vices: state.vices.map(v =>
-            v.id === id ? {...v, lastLoggedAt: new Date().toISOString()} : v,
+            v.id === id
+              ? {
+                  ...v,
+                  lastLoggedAt: new Date().toISOString(),
+                  logCount: (v.logCount ?? 0) + 1,
+                }
+              : v,
+          ),
+        })),
+      resetViceCount: (id: string) =>
+        set(state => ({
+          vices: state.vices.map(v =>
+            v.id === id ? {...v, logCount: 0} : v,
           ),
         })),
       deleteVice: (id: string) =>

@@ -6,6 +6,7 @@ import type {StackNavigationProp} from '@react-navigation/stack';
 import ViceCard from '../components/ViceCard';
 import AddViceModal from '../components/AddViceModal';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
+import ResetConfirmDialog from '../components/ResetConfirmDialog';
 import {useViceStore} from '../store/viceStore';
 import {useHistoryStore} from '../store/historyStore';
 import {
@@ -20,10 +21,11 @@ type VicesNavProp = StackNavigationProp<RootStackParamList, 'Vices'>;
 export default function VicesScreen() {
   const theme = useTheme();
   const navigation = useNavigation<VicesNavProp>();
-  const {vices, logVice, deleteVice} = useViceStore();
+  const {vices, logVice, resetViceCount, deleteVice} = useViceStore();
   const {addEntry} = useHistoryStore();
   const [addVisible, setAddVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Vice | null>(null);
+  const [resetTarget, setResetTarget] = useState<Vice | null>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -43,6 +45,19 @@ export default function VicesScreen() {
       ...vice,
       lastLoggedAt: new Date().toISOString(),
     });
+  };
+
+  const handleResetOnly = () => {
+    if (!resetTarget) return;
+    resetViceCount(resetTarget.id);
+    setResetTarget(null);
+  };
+
+  const handleResetAndLog = () => {
+    if (!resetTarget) return;
+    addEntry(resetTarget);
+    resetViceCount(resetTarget.id);
+    setResetTarget(null);
   };
 
   const handleDeleteOnly = async () => {
@@ -81,6 +96,7 @@ export default function VicesScreen() {
             <ViceCard
               vice={item}
               onLogPress={() => handleLogVice(item)}
+              onResetPress={() => setResetTarget(item)}
               onDeletePress={() => setDeleteTarget(item)}
             />
           )}
@@ -96,6 +112,12 @@ export default function VicesScreen() {
       />
 
       <AddViceModal visible={addVisible} onDismiss={() => setAddVisible(false)} />
+      <ResetConfirmDialog
+        vice={resetTarget}
+        onDismiss={() => setResetTarget(null)}
+        onResetOnly={handleResetOnly}
+        onResetAndLog={handleResetAndLog}
+      />
       <DeleteConfirmDialog
         vice={deleteTarget}
         onDismiss={() => setDeleteTarget(null)}

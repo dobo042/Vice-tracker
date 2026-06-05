@@ -30,7 +30,9 @@ function HistoryCard({entry, onRemove}: HistoryCardProps) {
             </Text>
           ) : null}
           <Text variant="labelSmall" style={{color: theme.colors.outline, marginTop: 4}}>
-            Logged {formatted}
+            {entry.logCount != null && entry.logCount > 0
+              ? `×${entry.logCount} — saved ${formatted}`
+              : `Logged ${formatted}`}
           </Text>
         </View>
         <IconButton icon="close" onPress={onRemove} />
