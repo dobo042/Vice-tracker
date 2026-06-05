@@ -11,22 +11,21 @@ interface Props {
 export default function AddViceModal({visible, onDismiss}: Props) {
   const {addVice} = useViceStore();
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [cooldownHours, setCooldownHours] = useState('24');
+  const [cooldownMinutes, setCooldownMinutes] = useState('60');
 
+  const minutesValue = Number(cooldownMinutes);
   const cooldownValid =
-    cooldownHours !== '' && !isNaN(Number(cooldownHours)) && Number(cooldownHours) > 0;
+    cooldownMinutes !== '' && !isNaN(minutesValue) && minutesValue > 0;
 
   const reset = () => {
     setName('');
-    setDescription('');
-    setCooldownHours('24');
+    setCooldownMinutes('60');
   };
 
   const handleSave = () => {
     const trimmedName = name.trim();
     if (!trimmedName || !cooldownValid) return;
-    addVice(trimmedName, Math.round(Number(cooldownHours) * 60), description.trim() || undefined);
+    addVice(trimmedName, Math.round(minutesValue));
     reset();
     onDismiss();
   };
@@ -49,22 +48,14 @@ export default function AddViceModal({visible, onDismiss}: Props) {
             autoFocus
           />
           <TextInput
-            label="Description (optional)"
-            value={description}
-            onChangeText={setDescription}
+            label="Cooldown (minutes) *"
+            value={cooldownMinutes}
+            onChangeText={setCooldownMinutes}
             mode="outlined"
-            multiline
-            numberOfLines={2}
+            keyboardType="number-pad"
           />
-          <TextInput
-            label="Cooldown (hours) *"
-            value={cooldownHours}
-            onChangeText={setCooldownHours}
-            mode="outlined"
-            keyboardType="decimal-pad"
-          />
-          {!cooldownValid && cooldownHours !== '' ? (
-            <HelperText type="error">Enter a positive number of hours</HelperText>
+          {!cooldownValid && cooldownMinutes !== '' ? (
+            <HelperText type="error">Enter a positive number of minutes</HelperText>
           ) : null}
         </Dialog.Content>
         <Dialog.Actions>

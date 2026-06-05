@@ -18,7 +18,10 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <PaperProvider theme={MD3LightTheme}>
+        <PaperProvider theme={{
+          ...MD3LightTheme,
+          colors: {...MD3LightTheme.colors, primary: '#4A4A00', onPrimary: '#FFFFFF'},
+        }}>
           <NavigationContainer>
             <AppNavigator />
           </NavigationContainer>

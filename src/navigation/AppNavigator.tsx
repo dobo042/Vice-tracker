@@ -10,7 +10,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {backgroundColor: '#6750A4'},
+        headerStyle: {backgroundColor: '#4A4A00'},
         headerTintColor: '#fff',
         headerTitleStyle: {fontWeight: 'bold'},
       }}>

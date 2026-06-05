@@ -4,8 +4,7 @@ import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.WearableListenerService
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+
 
 class WearListenerService : WearableListenerService() {
 
@@ -16,10 +15,7 @@ class WearListenerService : WearableListenerService() {
             ) {
                 val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
                 val json = dataMap.getString("viceList") ?: return@forEach
-                val type = object : TypeToken<List<WearViceJson>>() {}.type
-                val raw: List<WearViceJson> = Gson().fromJson(json, type)
-                val vices = raw.map { it.toWearVice() }
-                ViceRepository.update(vices)
+                ViceRepository.updateFromJson(json)
             }
         }
     }
