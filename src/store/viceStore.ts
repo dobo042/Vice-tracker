@@ -1,7 +1,7 @@
-import {create} from 'zustand';
-import {persist, createJSONStorage} from 'zustand/middleware';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type {Vice} from '../types';
+import type { Vice } from '../types';
 
 interface ViceStore {
   vices: Vice[];
@@ -13,10 +13,10 @@ interface ViceStore {
 
 export const useViceStore = create<ViceStore>()(
   persist(
-    set => ({
+    (set) => ({
       vices: [],
       addVice: (name, cooldownMinutes, description) =>
-        set(state => ({
+        set((state) => ({
           vices: [
             ...state.vices,
             {
@@ -30,8 +30,8 @@ export const useViceStore = create<ViceStore>()(
           ],
         })),
       logVice: (id: string) =>
-        set(state => ({
-          vices: state.vices.map(v =>
+        set((state) => ({
+          vices: state.vices.map((v) =>
             v.id === id
               ? {
                   ...v,
@@ -42,13 +42,11 @@ export const useViceStore = create<ViceStore>()(
           ),
         })),
       resetViceCount: (id: string) =>
-        set(state => ({
-          vices: state.vices.map(v =>
-            v.id === id ? {...v, logCount: 0} : v,
-          ),
+        set((state) => ({
+          vices: state.vices.map((v) => (v.id === id ? { ...v, logCount: 0 } : v)),
         })),
       deleteVice: (id: string) =>
-        set(state => ({vices: state.vices.filter(v => v.id !== id)})),
+        set((state) => ({ vices: state.vices.filter((v) => v.id !== id) })),
     }),
     {
       name: 'vice-storage',

@@ -1,7 +1,7 @@
-import {create} from 'zustand';
-import {persist, createJSONStorage} from 'zustand/middleware';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type {Vice, HistoryEntry} from '../types';
+import type { Vice, HistoryEntry } from '../types';
 
 interface HistoryStore {
   entries: HistoryEntry[];
@@ -12,10 +12,10 @@ interface HistoryStore {
 
 export const useHistoryStore = create<HistoryStore>()(
   persist(
-    set => ({
+    (set) => ({
       entries: [],
       addEntry: (vice: Vice) =>
-        set(state => ({
+        set((state) => ({
           entries: [
             {
               id: Date.now().toString(),
@@ -28,8 +28,8 @@ export const useHistoryStore = create<HistoryStore>()(
           ],
         })),
       deleteEntry: (id: string) =>
-        set(state => ({entries: state.entries.filter(e => e.id !== id)})),
-      clearHistory: () => set({entries: []}),
+        set((state) => ({ entries: state.entries.filter((e) => e.id !== id) })),
+      clearHistory: () => set({ entries: [] }),
     }),
     {
       name: 'history-storage',

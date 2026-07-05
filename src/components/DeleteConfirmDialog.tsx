@@ -1,6 +1,6 @@
 import React from 'react';
-import {Button, Dialog, Portal, Text, useTheme} from 'react-native-paper';
-import type {Vice} from '../types';
+import { Button, Dialog, Portal, Text, useTheme } from 'react-native-paper';
+import type { Vice } from '../types';
 
 interface Props {
   vice: Vice | null;

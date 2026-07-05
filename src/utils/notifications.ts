@@ -3,7 +3,7 @@ import notifee, {
   AuthorizationStatus,
   TriggerType,
 } from '@notifee/react-native';
-import type {Vice} from '../types';
+import type { Vice } from '../types';
 
 const CHANNEL_ID = 'vice-ready';
 
@@ -31,7 +31,7 @@ export async function scheduleViceReadyNotification(vice: Vice): Promise<void> {
       body: `You can ${vice.name} again!`,
       android: {
         channelId: CHANNEL_ID,
-        pressAction: {id: 'default'},
+        pressAction: { id: 'default' },
       },
     },
     {

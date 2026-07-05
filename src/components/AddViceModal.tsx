@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
-import {StyleSheet} from 'react-native';
-import {Button, Dialog, HelperText, Portal, TextInput} from 'react-native-paper';
-import {useViceStore} from '../store/viceStore';
+import React, { useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Button, Dialog, HelperText, Portal, TextInput } from 'react-native-paper';
+import { useViceStore } from '../store/viceStore';
 
 interface Props {
   visible: boolean;
   onDismiss: () => void;
 }
 
-export default function AddViceModal({visible, onDismiss}: Props) {
-  const {addVice} = useViceStore();
+export default function AddViceModal({ visible, onDismiss }: Props) {
+  const { addVice } = useViceStore();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [cooldownHours, setCooldownHours] = useState('24');
@@ -25,7 +25,9 @@ export default function AddViceModal({visible, onDismiss}: Props) {
 
   const handleSave = () => {
     const trimmedName = name.trim();
-    if (!trimmedName || !cooldownValid) return;
+    if (!trimmedName || !cooldownValid) {
+      return;
+    }
     addVice(trimmedName, Math.round(Number(cooldownHours) * 60), description.trim() || undefined);
     reset();
     onDismiss();
@@ -41,13 +43,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
       <Dialog visible={visible} onDismiss={handleDismiss}>
         <Dialog.Title>Add Vice</Dialog.Title>
         <Dialog.Content style={styles.content}>
-          <TextInput
-            label="Name *"
-            value={name}
-            onChangeText={setName}
-            mode="outlined"
-            autoFocus
-          />
+          <TextInput label="Name *" value={name} onChangeText={setName} mode="outlined" autoFocus />
           <TextInput
             label="Description (optional)"
             value={description}
@@ -69,10 +65,7 @@ export default function AddViceModal({visible, onDismiss}: Props) {
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={handleDismiss}>Cancel</Button>
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            disabled={!name.trim() || !cooldownValid}>
+          <Button mode="contained" onPress={handleSave} disabled={!name.trim() || !cooldownValid}>
             Save
           </Button>
         </Dialog.Actions>
@@ -82,5 +75,5 @@ export default function AddViceModal({visible, onDismiss}: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: {gap: 12},
+  content: { gap: 12 },
 });
